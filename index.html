@@ -687,6 +687,9 @@ function renderMonth(){const now=new Date(), m=now.getMonth();
 // ---------- faces (photos) ----------
 // Approved photos live in db "faces/<personId>". Editors' uploads go live at once; other relatives' uploads wait in
 // "submissions" until an editor approves them. Signed-out visitors get no db, so they see leaves and initials only.
+// ENDPOINT is the Google Apps Script web app (apps-script/Code.gs). On the public site it stores and serves the photos,
+// and it takes the album form. Paste its /exec URL here. Empty = photo uploads are off on the public site.
+const ENDPOINT='';
 const FACES={}; let dbH=null, assetsH=null, userH=null, isEditor=false, pending=[];
 const faceOf=p=>FACES[p.id]||null;
 const initials=p=>named(p)?p.name.split(/\s+/).filter(w=>/^[A-Z]/.test(w)).slice(0,2).map(w=>w[0]).join(''):'·';
@@ -698,7 +701,20 @@ function shrink(file){return new Promise((res,rej)=>{const img=new Image(),u=URL
   img.onload=()=>{const k=Math.min(1,640/Math.max(img.width,img.height)),c=document.createElement('canvas');c.width=Math.round(img.width*k);c.height=Math.round(img.height*k);
     c.getContext('2d').drawImage(img,0,0,c.width,c.height);URL.revokeObjectURL(u);c.toBlob(b=>b?res(b):rej(new Error('resize')),'image/jpeg',.85);};
   img.onerror=()=>rej(new Error('That file is not an image this browser can read.'));img.src=u;});}
+const toDataURL=b=>new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result);r.onerror=()=>rej(r.error);r.readAsDataURL(b);});
+async function addPhotoPublic(p,file){
+  toast('Uploading…');
+  try{const blob=await shrink(file);
+    const r=await fetch(ENDPOINT,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},
+      body:JSON.stringify({kind:'face',pid:p.id,name:p.name,image:await toDataURL(blob),at:new Date().toISOString()})});
+    const j=await r.json();
+    if(!j.ok)throw {code:j.error};
+    FACES[p.id]=URL.createObjectURL(blob); // show it at once; the Drive copy takes over on the next visit
+    update(); renderMonth(); openPerson(p); toast('Photo added');
+  }catch(e){toast(e&&e.code==='too_large'?'That photo is too large':'The upload did not work. Try again.');}
+}
 async function addPhoto(p,file){
+  if(!dbH&&ENDPOINT)return addPhotoPublic(p,file);
   if(!assetsH||!dbH){toast('Sign in to claude.ai to add photos');return;}
   toast('Uploading…');
   try{const blob=await shrink(file); const up=await assetsH.upload(blob,{type:'image/jpeg'});
@@ -707,7 +723,7 @@ async function addPhoto(p,file){
   }catch(e){toast(e&&e.code==='too_large'?'That photo is too large':e&&e.code==='not_granted'?'You can view the tree but not add photos':'The upload did not work. Try again.');}
 }
 function wireFace(p){const box=panel.querySelector('#faceTools'); if(!box)return;
-  if(!assetsH){box.innerHTML='';return;}
+  if(!assetsH&&!ENDPOINT){box.innerHTML='';return;}
   box.innerHTML=`<label class="tb addph" for="phIn">${faceOf(p)?'Change photo':'Add a photo'}</label><input id="phIn" type="file" accept="image/*" hidden>
     ${isEditor&&faceOf(p)?'<button class="tb" id="phDel" type="button">Remove photo</button>':''}
     <small>Photos show for everyone right away. Only add photos the person is happy to share. For children, ask a parent.</small>`;
@@ -727,7 +743,12 @@ function openReview(){current=null;
       await dbH.doc('submissions/'+sid).delete(); toast(btn.dataset.a==='yes'?'Approved':'Removed');
     }catch(e){toast('That did not save. Try again.');}});}
 (async()=>{
-  if(!window.claude)return;
+  if(!window.claude){
+    if(!ENDPOINT)return;
+    try{const j=await (await fetch(ENDPOINT+'?faces=1')).json();
+      Object.entries(j.faces||{}).forEach(([k,v])=>{if(!FACES[+k])FACES[+k]=v;});
+      update(); renderMonth(); if(current)openPerson(current);}catch(e){}
+    return;}
   try{ userH=await claude.use('user'); }catch(e){}
   try{ isEditor=userH?await userH.canEdit():false; }catch(e){}
   try{ assetsH=await claude.use('assets'); }catch(e){}
@@ -744,7 +765,7 @@ document.getElementById('reviewBtn').onclick=openReview;
 // point to a shared album somewhere else, such as Google Photos ("link"). Each photo can list the people in it ("p": person ids);
 // those photos then show on the person's card. New albums from relatives go to SEND_ENDPOINT (the planned Google Apps Script
 // web app that also takes "Fix my details"). Until it exists, the form opens WhatsApp with the album details filled in.
-const SEND_ENDPOINT='';
+const SEND_ENDPOINT=ENDPOINT;
 let ALBUMS=[], albOpen=null, albPerson=null, albMore=false, lbList=[], lbIdx=0;
 fetch('data/albums.json',{cache:'no-cache'}).then(r=>r.ok?r.json():{albums:[]}).then(d=>{ALBUMS=d.albums||[];
   if(!document.getElementById('albums').hidden)renderAlbums(); if(current)openPerson(current);}).catch(()=>{});
