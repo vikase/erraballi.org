@@ -172,6 +172,28 @@ main{flex:1;min-height:0;position:relative;display:flex}
 .fix form{display:grid;gap:8px;margin-top:10px}
 .fix input{border:1px solid var(--line-strong);border-radius:8px;padding:6px 8px;background:var(--bg)}
 .fix .ok{color:var(--leaf);font-size:13px}
+.msg{margin-top:16px}.msg .primary{background:var(--leaf);color:#fff;border:0;border-radius:10px;padding:8px 14px;font-weight:600}
+.ask{display:grid;gap:12px;margin-top:8px}
+.ask label{display:grid;gap:4px;font-size:13px;color:var(--muted)}
+.ask input,.ask select,.ask textarea{border:1px solid var(--line-strong);border-radius:8px;padding:7px 9px;background:var(--bg);color:var(--ink,inherit);font:inherit;font-size:15px}
+.ask .tick{display:flex;gap:8px;align-items:flex-start;color:inherit}.ask .tick input{margin-top:3px}
+.ask .priv{color:var(--muted);font-size:12px}
+.ask .primary{background:var(--maroon);color:#fff;border:0;border-radius:10px;padding:10px 14px;font-weight:600;font-size:15px}
+.ask .primary:disabled{opacity:.6}
+.ask .ok{color:var(--maroon);font-size:13px}
+.ask h3{margin:8px 0 0}
+.askp{border:1px solid var(--line);border-radius:12px;padding:12px;display:grid;gap:10px;background:var(--bg)}
+.askh{display:flex;gap:10px;align-items:center}.askh small{display:block;color:var(--muted)}
+.askf{display:grid;gap:8px}
+.askc summary{cursor:pointer;font-weight:600;font-size:14px;margin-bottom:8px}.askc{display:grid;gap:8px}.askc[open]>label{margin-top:8px}
+.bdin{display:flex;gap:6px}.bdin select{flex:1}.bdin input{width:80px}
+.thanks{color:var(--leaf);font-weight:600}
+.nudge{position:fixed;left:50%;bottom:max(16px,env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:40;width:min(560px,calc(100% - 32px));display:flex;gap:12px;align-items:center;background:var(--panel);border:1px solid var(--line);border-left:4px solid var(--bloom);border-radius:14px;box-shadow:var(--shadow);padding:12px 14px}
+.nudge[hidden]{display:none}
+.nudge p{margin:0;flex:1;font-weight:600;font-size:14px}.nudge p small{display:block;font-weight:400;color:var(--muted);font-size:12.5px}
+.nudge .primary{background:var(--maroon);color:#fff;border:0;border-radius:10px;padding:8px 12px;font-weight:600;white-space:nowrap}
+.nudge .tb{white-space:nowrap}
+@media (max-width:520px){.nudge{flex-wrap:wrap}.nudge p{flex-basis:calc(100% - 50px)}.nudge .primary,.nudge .tb{flex:1}}
 
 /* Generic page views */
 .page{padding-block:28px 60px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));max-width:980px;margin:0 auto;width:100%}
@@ -413,6 +435,7 @@ details.cousins td:first-child{font-weight:600;white-space:nowrap}
   <div class="stage"><button class="x" id="lbX" aria-label="Close">×</button><button class="nav prev" id="lbPrev" aria-label="Previous photo">‹</button><img id="lbImg" alt=""><button class="nav next" id="lbNext" aria-label="Next photo">›</button></div>
   <div class="info" id="lbInfo"></div>
 </div>
+<div class="nudge" id="nudge" hidden role="dialog" aria-live="polite" aria-label="Missing details"></div>
 <div class="toast" id="toast"></div>
 <div class="tour" id="tour" hidden role="dialog" aria-live="polite" aria-label="How to use the tree"><div class="spot" id="tourSpot"></div><div class="card" id="tourCard"></div></div>
 
@@ -626,16 +649,16 @@ function openPerson(p){current=p;show('tree');const sp=spousesOf(p), ch=children
     ${sp.length?`<h3>${sp.length>1?'Spouses':'Spouse'}</h3><div class="chips">${sp.map(chip).join('')}</div>`:''}
     ${ch.length?`<h3>Children</h3><div class="chips">${ch.map(chip).join('')}</div>`:''}
     <h3>Related to…</h3><div class="chips"><button class="chip" id="relMe">…me</button><button class="chip" id="relPick">…someone else</button></div>
-    <div class="fix"><button class="primary" id="fixBtn">Fix or add my details</button><div id="fixForm"></div></div>`;
+    ${REACH.has(p.id)&&p.id!==ME?`<div class="msg"><button class="primary" id="msgBtn">Send ${escH(short(p).split(' ')[0])} a message</button></div>`:''}
+    <div class="fix"><button class="tb" id="fixBtn">${chosen&&p.id===ME?'Fix or add my details':'Fix or add details'}</button></div>`;
   panel.classList.add('open'); wireFace(p); wireInPhotos(p);
   const big=panel.querySelector('.phead img.avatar'); if(big){big.style.cursor='zoom-in';big.title='See larger';big.onclick=()=>openLB([{url:bigFace(faceOf(p)),title:short(p)}],0);}
   panel.querySelector('.close').onclick=()=>panel.classList.remove('open');
   panel.querySelectorAll('.chip[data-id]').forEach(b=>b.onclick=()=>{const x=byId.get(+b.dataset.id);reveal(x.id);openPerson(x);});
   panel.querySelector('#relMe').onclick=()=>{if(!chosen){openWelcome();return;}document.getElementById('pa').value=short(p);document.getElementById('pb').value=byId.get(ME).name;show('related');relate();};
   panel.querySelector('#relPick').onclick=()=>{document.getElementById('pa').value=short(p);document.getElementById('pb').value='';show('related');document.getElementById('pb').focus();};
-  panel.querySelector('#fixBtn').onclick=()=>{const f=panel.querySelector('#fixForm');
-    f.innerHTML=`<form id="ff"><input id="f-city" placeholder="Current city" value="${family?(p.city||''):''}"><input id="f-occ" placeholder="What you do" value="${family?(p.occ||''):''}"><input id="f-note" placeholder="Anything to correct (names, years, a missing child)"><button class="primary" type="submit">Send to the family sheet</button><div class="ok" id="fok"></div></form>`;
-    f.querySelector('#ff').onsubmit=e=>{e.preventDefault();f.querySelector('#fok').textContent='Prototype: in the real site this goes straight into the master sheet for the family admin to approve.';};};
+  panel.querySelector('#fixBtn').onclick=()=>openAsk(p,true);
+  const mb=panel.querySelector('#msgBtn'); if(mb)mb.onclick=()=>openMessage(p);
 }
 
 // ---------- relationship engine ----------
@@ -733,7 +756,7 @@ function renderYou(){const t=document.getElementById('youTxt'); t.innerHTML=chos
 function openWelcome(){me0.value=chosen?byId.get(ME).name:'';welcome.hidden=false;me0.focus();}
 function closeWelcome(){welcome.hidden=true;sizeTree();update();}
 document.getElementById('meForm').onsubmit=e=>{e.preventDefault();const p=findByName(me0.value);if(!p){toast('No one by that name in the tree');return;}
-  ME=p.id;chosen=true;try{localStorage.setItem('erraballi-me',ME)}catch(e){};renderYou();closeWelcome();refreshAll();revealMine(ME);toast('Showing the family from '+p.name.split(' ')[0]+'’s side');startTour();};
+  ME=p.id;chosen=true;try{localStorage.setItem('erraballi-me',ME)}catch(e){};renderYou();closeWelcome();refreshAll();revealMine(ME);toast('Showing the family from '+p.name.split(' ')[0]+'’s side');startTour();nudged=false;setTimeout(maybeNudge,1500);};
 document.getElementById('justLook').onclick=()=>{try{localStorage.setItem('erraballi-looked','1')}catch(e){};closeWelcome();startTour();};
 document.getElementById('youBtn').onclick=openWelcome;
 const EX=[[208,14],[208,5],[140,208],[277,206],[199,131]];
@@ -847,7 +870,7 @@ function openReview(){current=null;
   if(!window.claude){
     if(!ENDPOINT)return;
     try{const j=await (await fetch(ENDPOINT+'?faces=1')).json();
-      Object.entries(j.faces||{}).forEach(([k,v])=>{if(!FACES[+k])FACES[+k]=v;});
+      Object.entries(j.faces||{}).forEach(([k,v])=>{if(!FACES[+k])FACES[+k]=v;}); ASKED=j.asked||{}; REACH=new Set(j.reach||[]);
       update(); renderMonth(); if(current)openPerson(current);}catch(e){}
     return;}
   try{ userH=await claude.use('user'); }catch(e){}
@@ -860,6 +883,117 @@ function openReview(){current=null;
   if(current)openPerson(current);
 })();
 document.getElementById('reviewBtn').onclick=openReview;
+
+// ---------- missing details and messages ----------
+// After a visitor picks "I am ...", a small note asks for what the tree is missing: their own birthday, city and work,
+// and the same for their close family (parents, spouse, children, brothers and sisters). Email and phone come only from
+// the person themselves. Everything goes to ENDPOINT (kind "details"), into Vikas's private sheet "erraballi.org inbox";
+// it shows on the site after Vikas copies it to the master sheet. Emails and phone numbers never go to the site.
+// ASKED: fields someone already sent for a person (so we do not ask again). REACH: people who allow messages.
+// A "Message" button on their card sends through the script (kind "message"); the sender never sees the address.
+let ASKED={}, REACH=new Set();
+const ASK_FIELDS=[['bday','birthday'],['city','city'],['occ','work']];
+const lsGet=(k,d)=>{try{const v=localStorage.getItem(k);return v==null?d:JSON.parse(v);}catch(e){return d;}};
+const lsSet=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}};
+function sentFor(id){return [...(ASKED[id]||[]),...((lsGet('erraballi-sent',{}))[id]||[])];}
+function missingFor(p){const s=sentFor(p.id);return ASK_FIELDS.filter(([f])=>!p[f]&&!s.includes(f)).map(([f])=>f);}
+const contactDone=id=>REACH.has(id)||lsGet('erraballi-contact-'+id,false);
+function closeFamily(p){const out=new Map();const add=x=>{if(x&&x.id!==p.id&&x.living&&named(x))out.set(x.id,x);};
+  p.parents.forEach(id=>{const pa=byId.get(id);add(pa);(childrenOf(id)||[]).forEach(add);});
+  spousesOf(p).forEach(add); childrenOf(p.id).forEach(add);
+  return [...out.values()];}
+const listWords=a=>a.length<2?a.join(''):a.slice(0,-1).join(', ')+' and '+a[a.length-1];
+const fieldWord=f=>(ASK_FIELDS.find(x=>x[0]===f)||[,f])[1];
+function bdayInputs(key,val){const [m,d]=(val||'').split(' ');
+  return `<span class="bdin"><select data-k="${key}" data-f="bm" aria-label="Birthday month"><option value="">Month</option>${MONTHS.map(x=>`<option${x===m?' selected':''}>${x}</option>`).join('')}</select>
+    <input data-k="${key}" data-f="bd" type="number" min="1" max="31" inputmode="numeric" placeholder="Day" aria-label="Birthday day" value="${escH(d||'')}"></span>`;}
+function fieldInputs(p,fields,key){return fields.map(f=>f==='bday'?`<label>Birthday ${bdayInputs(key,'')}</label>`
+  :`<label>${f==='city'?'City now':'Work'} <input data-k="${key}" data-f="${f}" placeholder="${f==='city'?'For example Hyderabad':'For example teacher, retired, student'}" autocomplete="off"></label>`).join('');}
+function contactInputs(key){return `<label>Email <input data-k="${key}" data-f="email" type="email" autocomplete="email" placeholder="you@example.com"></label>
+  <label>Phone or WhatsApp <input data-k="${key}" data-f="phone" type="tel" autocomplete="tel" placeholder="+1 555 123 4567"></label>
+  <label class="tick"><input type="checkbox" data-k="${key}" data-f="canMessage" checked> Relatives can send me a message through this site. They do not see my email or phone.</label>
+  <small class="priv">Only Vikas sees your email and phone. They are never on the website.</small>`;}
+// Open the "help fill in" form in the side panel. who = the person the form is about (default: the visitor).
+function openAsk(who,all){
+  const me=chosen?byId.get(ME):null; const p=who||me; if(!p){openWelcome();return;}
+  const self=me&&p.id===me.id; current=null; hideNudge();
+  const fam=self?closeFamily(p).map(x=>({x,m:missingFor(x)})).filter(o=>o.m.length):[];
+  const myMissing=all?ASK_FIELDS.map(x=>x[0]):missingFor(p);
+  const section=(x,fields,key,extra)=>`<div class="askp"><div class="askh">${faceHTML(x,36)}<div><b>${escH(short(x))}</b><small>${self&&x.id===me.id?'You':escH(termTo(x)||'')}</small></div></div>
+    ${fields.length?`<div class="askf">${fieldInputs(x,fields,key)}</div>`:''}${extra||''}</div>`;
+  panel.innerHTML=`<button class="close" aria-label="Close">×</button><div class="eyebrow">${self?'Help fill in the tree':'Fix or add details'}</div>
+    <h2>${self?'A few things are missing':escH(short(p))}</h2>
+    <p class="rel">${self?'Fill in what you know. Leave the rest blank.':'Fill in what you know about '+escH(short(p).split(' ')[0])+'. Vikas checks each answer before it goes on the tree.'}</p>
+    <form id="askForm" class="ask">
+      ${section(p,myMissing,'s',
+        (self?`<details class="askc"${contactDone(p.id)?'':' open'}><summary>Stay in touch (optional)</summary>${contactInputs('s')}</details>`:'')+
+        `<label>Anything to correct? <input data-k="s" data-f="note" placeholder="A name, a year, a missing child"></label>`)}
+      ${fam.length?`<h3>Your close family</h3><p class="rel" style="margin-top:0">Do you know any of these?</p>${fam.map((o,i)=>section(o.x,o.m,'f'+i)).join('')}`:''}
+      <button class="primary" type="submit">Send</button><div class="ok" id="askOk" role="status"></div>
+    </form>`;
+  panel.classList.add('open');
+  panel.querySelector('.close').onclick=()=>panel.classList.remove('open');
+  const form=panel.querySelector('#askForm');
+  form.onsubmit=async e=>{e.preventDefault();
+    const val=(k,f)=>{const el=form.querySelector(`[data-k="${k}"][data-f="${f}"]`);return !el?'':el.type==='checkbox'?el.checked:el.value.trim();};
+    const read=(x,k)=>{const o={pid:x.id,name:x.name};
+      const bm=val(k,'bm'),bd=parseInt(val(k,'bd'),10); if(bm&&bd>=1&&bd<=31)o.bday=bm+' '+bd;
+      ['city','occ','note'].forEach(f=>{const v=val(k,f);if(v)o[f]=v;});
+      if(k==='s'&&self){const em=val(k,'email'),ph=val(k,'phone');if(em)o.email=em;if(ph)o.phone=ph;if(em||ph)o.canMessage=val(k,'canMessage')===true;}
+      return o;};
+    const list=[read(p,'s'),...fam.map((o,i)=>read(o.x,'f'+i))].filter(o=>Object.keys(o).length>2);
+    const ok=form.querySelector('#askOk');
+    if(!list.length){ok.textContent='Nothing to send yet. Fill in at least one box.';return;}
+    if(list[0].email&&!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(list[0].email)){ok.textContent='That email address does not look right.';return;}
+    const btn=form.querySelector('button[type=submit]');btn.disabled=true;ok.textContent='Sending…';
+    try{const r=await fetch(ENDPOINT,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},
+        body:JSON.stringify({kind:'details',by:me?me.id:'',byName:me?me.name:'',people:list,at:new Date().toISOString()})});
+      const j=await r.json(); if(!j.ok)throw new Error(j.error);
+      const sent=lsGet('erraballi-sent',{}); list.forEach(o=>{sent[o.pid]=[...new Set([...(sent[o.pid]||[]),...ASK_FIELDS.map(x=>x[0]).filter(f=>o[f])])];}); lsSet('erraballi-sent',sent);
+      if(list[0].email||list[0].phone){lsSet('erraballi-contact-'+p.id,true);}
+      form.innerHTML=`<p class="thanks">Thank you. ${list.length>1?'Your answers are':'Your answer is'} with Vikas. ${list.length>1?'They':'It'} will show on the tree after he adds ${list.length>1?'them':'it'} to the family sheet.</p>`;
+    }catch(err){btn.disabled=false;ok.textContent='That did not send. Check your connection and try again.';}
+  };
+}
+// The note at the bottom of the screen. It shows once per visit, and "Not now" hides it for 30 days.
+const nudge=document.getElementById('nudge'); let nudged=false;
+function hideNudge(){nudge.hidden=true;}
+function maybeNudge(){
+  if(nudged||!chosen||!ENDPOINT||!tour.hidden||!welcome.hidden)return;
+  if(Date.now()<lsGet('erraballi-nudge-'+ME,0))return;
+  const me=byId.get(ME); if(!me)return;
+  const mine=missingFor(me).map(fieldWord); const famN=closeFamily(me).filter(x=>missingFor(x).length).length;
+  if(!mine.length&&!famN&&contactDone(ME))return;
+  nudged=true;
+  const msg=mine.length?`Your card is missing your ${listWords(mine)}.`:famN?`${famN} of your close family ${famN===1?'is':'are'} missing a birthday, city or work.`:'Do you want relatives to be able to message you?';
+  nudge.innerHTML=`<div>${faceHTML(me,34)}</div><p>${msg}<small>It takes a minute and helps the whole family.</small></p>
+    <button class="primary" id="nuYes">Add now</button><button class="tb" id="nuNo">Not now</button>`;
+  nudge.hidden=false;
+  nudge.querySelector('#nuYes').onclick=()=>openAsk();
+  nudge.querySelector('#nuNo').onclick=()=>{lsSet('erraballi-nudge-'+ME,Date.now()+30*864e5);hideNudge();};
+}
+// Message a relative through the site.
+function openMessage(p){const me=chosen?byId.get(ME):null; current=null;
+  panel.innerHTML=`<button class="close" aria-label="Close">×</button><div class="eyebrow">Send a message</div><h2>To ${escH(short(p))}</h2>
+    <p class="rel">${escH(short(p).split(' ')[0])} gets it by email. You do not see their email or phone. Give a way for them to reply.</p>
+    <form id="msgForm" class="ask">
+      <label>Your name <input id="m-name" required value="${me?escH(me.name):''}" autocomplete="name"></label>
+      <label>Your email <input id="m-email" type="email" autocomplete="email"></label>
+      <label>Your phone or WhatsApp <input id="m-phone" type="tel" autocomplete="tel"></label>
+      <label>Message <textarea id="m-text" rows="5" required maxlength="2000"></textarea></label>
+      <button class="primary" type="submit">Send</button><div class="ok" id="msgOk" role="status"></div>
+    </form>`;
+  panel.classList.add('open'); panel.querySelector('.close').onclick=()=>panel.classList.remove('open');
+  const f=panel.querySelector('#msgForm'), ok=f.querySelector('#msgOk');
+  f.onsubmit=async e=>{e.preventDefault(); const g=id=>f.querySelector(id).value.trim();
+    if(!g('#m-email')&&!g('#m-phone')){ok.textContent='Add your email or phone so they can reply.';return;}
+    const btn=f.querySelector('button[type=submit]');btn.disabled=true;ok.textContent='Sending…';
+    try{const r=await fetch(ENDPOINT,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},
+        body:JSON.stringify({kind:'message',to:p.id,from:me?me.id:'',fromName:g('#m-name'),replyEmail:g('#m-email'),replyPhone:g('#m-phone'),text:g('#m-text')})});
+      const j=await r.json(); if(!j.ok)throw {code:j.error};
+      f.innerHTML=`<p class="thanks">Sent. ${escH(short(p).split(' ')[0])} will reply to you directly.</p>`;
+    }catch(err){btn.disabled=false;ok.textContent=err&&err.code==='busy'?'Too many messages today. Try again tomorrow.':err&&err.code==='not_reachable'?'This person does not take messages now.':'That did not send. Try again.';}
+  };}
 
 // ---------- albums ----------
 // Albums live in data/albums.json. Two kinds: photo albums with files in the repo ("dir" + "photos"), and link albums that
@@ -981,7 +1115,7 @@ function placeTour(){const st=tSteps[tStep]; const el=st.el();
 function startTour(force){let seen=false; try{seen=localStorage.getItem('erraballi-tour')==='1';}catch(e){}
   if(seen&&!force)return; show('tree');
   setTimeout(()=>{tSteps=buildTour(); tStep=0; tour.hidden=false; placeTour();},force?50:650);}
-function endTour(){tour.hidden=true; try{localStorage.setItem('erraballi-tour','1')}catch(e){}}
+function endTour(){tour.hidden=true; try{localStorage.setItem('erraballi-tour','1')}catch(e){} setTimeout(maybeNudge,800);}
 document.getElementById('helpBtn').onclick=()=>startTour(true);
 document.addEventListener('keydown',e=>{if(!tour.hidden&&e.key==='Escape')endTour();});
 window.addEventListener('resize',()=>{if(!tour.hidden)placeTour();});
@@ -998,6 +1132,7 @@ if(!hp&&chosen)setTimeout(()=>revealMine(ME),0);
 // Someone who closed the opening screen before this guide existed still gets it once.
 if(!hp&&welcome.hidden)startTour();
 window.addEventListener('resize',sizeTree);
+setTimeout(maybeNudge,2500);
 }
 </script>
 </body>
