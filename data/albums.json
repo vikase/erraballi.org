@@ -1,0 +1,806 @@
+{
+ "albums": [
+  {
+   "id": "old-site",
+   "title": "From the old erraballi.org",
+   "when": "posted 2017 onward",
+   "place": "Kalleda, Hyderabad, the Bay Area and travels",
+   "by": "the first family website",
+   "about": "Every photo from the Home and Gallery pages of the first erraballi.org, saved in November 2026. Names were tagged from the old captions; some photos have no caption yet.",
+   "dir": "img/albums/old-site",
+   "cover": "007_home_Apta-Vikram-in-Kalleda.jpg",
+   "photos": [
+    {
+     "f": "001_home_IMG-0520.jpg",
+     "c": "",
+     "n": "",
+     "w": 1024,
+     "h": 607,
+     "p": [],
+     "from": "Home"
+    },
+    {
+     "f": "002_home_DSC00138.jpg",
+     "c": "",
+     "n": "",
+     "w": 1024,
+     "h": 502,
+     "p": [],
+     "from": "Home"
+    },
+    {
+     "f": "003_home_215064741-7fd1e9fe11.jpg",
+     "c": "",
+     "n": "",
+     "w": 500,
+     "h": 386,
+     "p": [],
+     "from": "Home"
+    },
+    {
+     "f": "004_home_Glenns-camera-034.jpg",
+     "c": "",
+     "n": "",
+     "w": 1063,
+     "h": 1600,
+     "p": [],
+     "from": "Home"
+    },
+    {
+     "f": "005_home_DSC00239.jpg",
+     "c": "",
+     "n": "",
+     "w": 1600,
+     "h": 1200,
+     "p": [],
+     "from": "Home"
+    },
+    {
+     "f": "006_home_MG-0434.jpg",
+     "c": "",
+     "n": "",
+     "w": 1152,
+     "h": 768,
+     "p": [],
+     "from": "Home"
+    },
+    {
+     "f": "007_home_Apta-Vikram-in-Kalleda.jpg",
+     "c": "Apta & Vikram in Kalleda",
+     "n": "",
+     "w": 1600,
+     "h": 1067,
+     "p": [
+      63,
+      64
+     ],
+     "from": "Home"
+    },
+    {
+     "f": "008_home_Shanghai-China.jpg",
+     "c": "Shanghai, China",
+     "n": "",
+     "w": 460,
+     "h": 460,
+     "p": [],
+     "from": "Home"
+    },
+    {
+     "f": "009_home_Costa-Rica.jpg",
+     "c": "Costa Rica",
+     "n": "",
+     "w": 1280,
+     "h": 960,
+     "p": [],
+     "from": "Home"
+    },
+    {
+     "f": "010_home_Costa-Rica.jpg",
+     "c": "Costa Rica",
+     "n": "",
+     "w": 1036,
+     "h": 816,
+     "p": [],
+     "from": "Home"
+    },
+    {
+     "f": "011_home_London.jpg",
+     "c": "London",
+     "n": "",
+     "w": 1600,
+     "h": 1200,
+     "p": [],
+     "from": "Home"
+    },
+    {
+     "f": "012_home_UK-Parliament.jpg",
+     "c": "UK Parliament",
+     "n": "",
+     "w": 1600,
+     "h": 1200,
+     "p": [],
+     "from": "Home"
+    },
+    {
+     "f": "013_home_Kenya-safari.jpg",
+     "c": "Kenya safari",
+     "n": "",
+     "w": 1600,
+     "h": 1200,
+     "p": [],
+     "from": "Home"
+    },
+    {
+     "f": "014_home_Serengeti-Tanzania.jpg",
+     "c": "Serengeti, Tanzania",
+     "n": "",
+     "w": 1600,
+     "h": 1200,
+     "p": [],
+     "from": "Home"
+    },
+    {
+     "f": "015_home_Dubai.jpg",
+     "c": "Dubai",
+     "n": "",
+     "w": 800,
+     "h": 533,
+     "p": [],
+     "from": "Home"
+    },
+    {
+     "f": "016_home_Kenya.jpg",
+     "c": "Kenya",
+     "n": "",
+     "w": 800,
+     "h": 600,
+     "p": [],
+     "from": "Home"
+    },
+    {
+     "f": "017_home_Costa-Rica.jpg",
+     "c": "Costa Rica",
+     "n": "",
+     "w": 1024,
+     "h": 533,
+     "p": [],
+     "from": "Home"
+    },
+    {
+     "f": "018_home_Beijing-China.jpg",
+     "c": "Beijing, China",
+     "n": "",
+     "w": 1600,
+     "h": 1267,
+     "p": [],
+     "from": "Home"
+    },
+    {
+     "f": "019_home_Utham-Pooja-Sunaina-Rajini.jpg",
+     "c": "Utham, Pooja, Sunaina & Rajini",
+     "n": "",
+     "w": 640,
+     "h": 417,
+     "p": [
+      213,
+      216,
+      215,
+      214
+     ],
+     "from": "Home"
+    },
+    {
+     "f": "020_home_DSC-4090-copy.jpg",
+     "c": "",
+     "n": "",
+     "w": 1600,
+     "h": 1067,
+     "p": [],
+     "from": "Home"
+    },
+    {
+     "f": "021_home_portrait-of-a-kalleda-native.jpg",
+     "c": "portrait of a kalleda native",
+     "n": "",
+     "w": 348,
+     "h": 300,
+     "p": [],
+     "from": "Home"
+    },
+    {
+     "f": "022_home_RDF-Kalleda-school-Archery-demo.jpg",
+     "c": "RDF Kalleda school Archery demo",
+     "n": "",
+     "w": 776,
+     "h": 732,
+     "p": [],
+     "from": "Home"
+    },
+    {
+     "f": "023_home_SF-Bay-area.jpg",
+     "c": "SF Bay area",
+     "n": "",
+     "w": 1600,
+     "h": 1067,
+     "p": [],
+     "from": "Home"
+    },
+    {
+     "f": "024_home_Quebec.jpg",
+     "c": "Quebec",
+     "n": "",
+     "w": 1600,
+     "h": 1200,
+     "p": [],
+     "from": "Home"
+    },
+    {
+     "f": "025_home_Karthik-Shah-s-wedding.jpg",
+     "c": "Karthik Shah's wedding",
+     "n": "",
+     "w": 539,
+     "h": 960,
+     "p": [
+      68
+     ],
+     "from": "Home"
+    },
+    {
+     "f": "026_home_At-Karthik-Shah-s-wedding-Dec-2015.jpg",
+     "c": "At Karthik Shah's wedding Dec 2015",
+     "n": "",
+     "w": 960,
+     "h": 540,
+     "p": [
+      68
+     ],
+     "from": "Home"
+    },
+    {
+     "f": "027_home_Mexico-Cruise.jpg",
+     "c": "Mexico Cruise",
+     "n": "",
+     "w": 1600,
+     "h": 1093,
+     "p": [],
+     "from": "Home"
+    },
+    {
+     "f": "028_home_Raghumohan-Kaka-s-farm-house.jpg",
+     "c": "Raghumohan Kaka's farm house",
+     "n": "Warangal",
+     "w": 1600,
+     "h": 1200,
+     "p": [],
+     "from": "Home"
+    },
+    {
+     "f": "029_gallery_Redlawada-2014.jpg",
+     "c": "Redlawada 2014",
+     "n": "",
+     "w": 1600,
+     "h": 1200,
+     "p": [],
+     "from": "Gallery"
+    },
+    {
+     "f": "030_gallery_Rushil-Dhruva.jpg",
+     "c": "Rushil & Dhruva",
+     "n": "July 2018",
+     "w": 593,
+     "h": 890,
+     "p": [
+      72,
+      71
+     ],
+     "from": "Gallery"
+    },
+    {
+     "f": "031_gallery_Arjun-getting-a-ride-on-the-Delhi-Metro.jpg",
+     "c": "Arjun getting a ride on the Delhi Metro",
+     "n": "",
+     "w": 800,
+     "h": 600,
+     "p": [],
+     "from": "Gallery"
+    },
+    {
+     "f": "032_gallery_Napa-Valley.jpg",
+     "c": "Napa Valley",
+     "n": "",
+     "w": 1600,
+     "h": 1200,
+     "p": [],
+     "from": "Gallery"
+    },
+    {
+     "f": "033_gallery_Pooja.jpg",
+     "c": "Pooja",
+     "n": "",
+     "w": 1600,
+     "h": 1200,
+     "p": [],
+     "from": "Gallery"
+    },
+    {
+     "f": "034_gallery_Gautham-s-wedding.jpg",
+     "c": "At Gautham's wedding",
+     "n": "",
+     "w": 1600,
+     "h": 1200,
+     "p": [
+      332
+     ],
+     "from": "Gallery"
+    },
+    {
+     "f": "035_gallery_Dr-Sushil-and-Srisha-Rao.jpg",
+     "c": "Dr Sushil and Srisha Rao",
+     "n": "",
+     "w": 1600,
+     "h": 1200,
+     "p": [
+      104,
+      163
+     ],
+     "from": "Gallery"
+    },
+    {
+     "f": "036_gallery_Rotary-Club-Secunderabad-award.jpg",
+     "c": "Rotary Club Secunderabad - award",
+     "n": "",
+     "w": 1024,
+     "h": 669,
+     "p": [],
+     "from": "Gallery"
+    },
+    {
+     "f": "037_gallery_Hilton-Head-2012.jpg",
+     "c": "At Hilton Head 2012",
+     "n": "",
+     "w": 1559,
+     "h": 1600,
+     "p": [],
+     "from": "Gallery"
+    },
+    {
+     "f": "038_gallery_no-caption-file-name-Sagar-kaka-with-Bhudevi-atha.jpg",
+     "c": "Sagar kaka with Bhudevi atha",
+     "n": "",
+     "w": 640,
+     "h": 480,
+     "p": [
+      109
+     ],
+     "from": "Gallery"
+    },
+    {
+     "f": "039_gallery_no-caption-file-name-bonala-grandkids.jpg",
+     "c": "Bonala grandkids",
+     "n": "",
+     "w": 415,
+     "h": 257,
+     "p": [],
+     "from": "Gallery"
+    },
+    {
+     "f": "040_gallery_Dilip-Kaka.jpg",
+     "c": "Dilip Kaka",
+     "n": "Happy to be back in India",
+     "w": 1280,
+     "h": 960,
+     "p": [
+      359
+     ],
+     "from": "Gallery"
+    },
+    {
+     "f": "041_gallery_Bonala-Kishen-Rao-annaya-s-family.jpg",
+     "c": "Bonala Kishen Rao annaya's family",
+     "n": "",
+     "w": 1128,
+     "h": 708,
+     "p": [
+      134
+     ],
+     "from": "Gallery"
+    },
+    {
+     "f": "042_gallery_Mukerjee-sahib-s.jpg",
+     "c": "Mukerjee sahib's",
+     "n": "soon to move in..",
+     "w": 1280,
+     "h": 960,
+     "p": [],
+     "from": "Gallery"
+    },
+    {
+     "f": "043_gallery_Kalleda.jpg",
+     "c": "Kalleda",
+     "n": "",
+     "w": 1280,
+     "h": 960,
+     "p": [],
+     "from": "Gallery"
+    },
+    {
+     "f": "044_gallery_Rammohan-kaka.jpg",
+     "c": "Rammohan kaka",
+     "n": "@Yosemite",
+     "w": 640,
+     "h": 480,
+     "p": [
+      258
+     ],
+     "from": "Gallery"
+    },
+    {
+     "f": "045_gallery_Jayaveer-pedanana-Mahila-pedamma-at-Uthams.jpg",
+     "c": "Jayaveer pedanana & Mahila pedamma at Uthams",
+     "n": "",
+     "w": 1280,
+     "h": 960,
+     "p": [
+      195,
+      196
+     ],
+     "from": "Gallery"
+    },
+    {
+     "f": "046_gallery_DSCF0163.jpg",
+     "c": "",
+     "n": "",
+     "w": 1280,
+     "h": 960,
+     "p": [],
+     "from": "Gallery"
+    },
+    {
+     "f": "047_gallery_Aditya-Rhonda.jpg",
+     "c": "Aditya & Rhonda",
+     "n": "",
+     "w": 1200,
+     "h": 1600,
+     "p": [
+      349,
+      350
+     ],
+     "from": "Gallery"
+    },
+    {
+     "f": "048_gallery_IMG-8926.jpg",
+     "c": "",
+     "n": "",
+     "w": 1024,
+     "h": 708,
+     "p": [],
+     "from": "Gallery"
+    },
+    {
+     "f": "049_gallery_Tashy-Sunanda.jpg",
+     "c": "Tashy & Sunanda",
+     "n": "",
+     "w": 1280,
+     "h": 960,
+     "p": [],
+     "from": "Gallery"
+    },
+    {
+     "f": "050_gallery_Sudhir-family.jpg",
+     "c": "Sudhir & family",
+     "n": "@MIT",
+     "w": 800,
+     "h": 600,
+     "p": [
+      100
+     ],
+     "from": "Gallery"
+    },
+    {
+     "f": "051_gallery_Valentines-day.jpg",
+     "c": "Valentines day?",
+     "n": "Kalleda 2014",
+     "w": 960,
+     "h": 540,
+     "p": [
+      82
+     ],
+     "from": "Gallery"
+    },
+    {
+     "f": "052_gallery_Kasuganti-family.jpg",
+     "c": "Kasuganti family",
+     "n": "",
+     "w": 504,
+     "h": 336,
+     "p": [],
+     "from": "Gallery"
+    },
+    {
+     "f": "053_gallery_Shilparamam.jpg",
+     "c": "At Shilparamam",
+     "n": "",
+     "w": 800,
+     "h": 600,
+     "p": [
+      135,
+      127
+     ],
+     "from": "Gallery"
+    },
+    {
+     "f": "054_gallery_Mira-ji.jpg",
+     "c": "Mira ji",
+     "n": "SF",
+     "w": 1600,
+     "h": 1200,
+     "p": [
+      147
+     ],
+     "from": "Gallery"
+    },
+    {
+     "f": "055_gallery_Apurva-Apta.jpg",
+     "c": "Apurva & Apta",
+     "n": "Philadelphia",
+     "w": 918,
+     "h": 1024,
+     "p": [
+      65,
+      63
+     ],
+     "from": "Gallery"
+    },
+    {
+     "f": "056_gallery_Kapil-Oakwood.jpg",
+     "c": "At Kapil Oakwood",
+     "n": "Gachibowli",
+     "w": 1600,
+     "h": 1200,
+     "p": [
+      185
+     ],
+     "from": "Gallery"
+    },
+    {
+     "f": "057_gallery_Buji-and-Shob.jpg",
+     "c": "Buji and Shob",
+     "n": "At Kruthika's",
+     "w": 1200,
+     "h": 1600,
+     "p": [
+      207
+     ],
+     "from": "Gallery"
+    },
+    {
+     "f": "059_gallery_California-poppies-spring-bloom-Fremont.jpg",
+     "c": "California poppies, spring bloom, Fremont",
+     "n": "",
+     "w": 1600,
+     "h": 1200,
+     "p": [],
+     "from": "Gallery"
+    },
+    {
+     "f": "060_gallery_Spring-time-in-Fremont.jpg",
+     "c": "Spring time in Fremont",
+     "n": "",
+     "w": 640,
+     "h": 478,
+     "p": [],
+     "from": "Gallery"
+    },
+    {
+     "f": "061_gallery_Alum-Rock-CA.jpg",
+     "c": "Alum Rock, CA",
+     "n": "",
+     "w": 1600,
+     "h": 1200,
+     "p": [],
+     "from": "Gallery"
+    },
+    {
+     "f": "062_gallery_Quebec.jpg",
+     "c": "Quebec",
+     "n": "",
+     "w": 1600,
+     "h": 1200,
+     "p": [],
+     "from": "Gallery"
+    },
+    {
+     "f": "063_gallery_Fremont-Older.jpg",
+     "c": "Fremont Older",
+     "n": "",
+     "w": 1200,
+     "h": 1600,
+     "p": [],
+     "from": "Gallery"
+    },
+    {
+     "f": "064_gallery_Hindu-Kush-mountains.jpg",
+     "c": "Hindu Kush mountains",
+     "n": "Shandur Pass at 14,000'",
+     "w": 1536,
+     "h": 1024,
+     "p": [],
+     "from": "Gallery"
+    },
+    {
+     "f": "065_gallery_White-Mountain-CA-14-000.jpg",
+     "c": "White Mountain, CA - 14,000'",
+     "n": "",
+     "w": 1600,
+     "h": 1200,
+     "p": [],
+     "from": "Gallery"
+    },
+    {
+     "f": "066_gallery_Heavenly-2016.jpg",
+     "c": "Heavenly 2016",
+     "n": "",
+     "w": 1600,
+     "h": 585,
+     "p": [],
+     "from": "Gallery"
+    },
+    {
+     "f": "067_gallery_Yosemite.jpg",
+     "c": "Yosemite",
+     "n": "",
+     "w": 1600,
+     "h": 1200,
+     "p": [],
+     "from": "Gallery"
+    },
+    {
+     "f": "068_gallery_Four-erraballi-s.jpg",
+     "c": "Four erraballi's",
+     "n": "",
+     "w": 1600,
+     "h": 687,
+     "p": [],
+     "from": "Gallery"
+    },
+    {
+     "f": "069_gallery_Vikram-Apta-US-Open.jpg",
+     "c": "Vikram & Apta @US Open",
+     "n": "",
+     "w": 858,
+     "h": 1002,
+     "p": [
+      64,
+      63
+     ],
+     "from": "Gallery"
+    },
+    {
+     "f": "070_gallery_Aditya-single-no-more.jpg",
+     "c": "Aditya single no more!",
+     "n": "",
+     "w": 1457,
+     "h": 894,
+     "p": [
+      349
+     ],
+     "from": "Gallery"
+    },
+    {
+     "f": "071_gallery_Ravi-Nicki.jpg",
+     "c": "Ravi & Nicki",
+     "n": "",
+     "w": 1024,
+     "h": 682,
+     "p": [
+      356,
+      357
+     ],
+     "from": "Gallery"
+    },
+    {
+     "f": "072_gallery_Vaman-bava-and-Praneetha.jpg",
+     "c": "Vaman bava and Praneetha",
+     "n": "",
+     "w": 1600,
+     "h": 1200,
+     "p": [
+      185,
+      94
+     ],
+     "from": "Gallery"
+    },
+    {
+     "f": "073_gallery_Bapu-Sanjay-and-Sagar-Kaka.jpg",
+     "c": "Bapu, Sanjay and Sagar Kaka",
+     "n": "",
+     "w": 1600,
+     "h": 1200,
+     "p": [],
+     "from": "Gallery"
+    },
+    {
+     "f": "074_gallery_VijayRama.jpg",
+     "c": "VijayRama",
+     "n": "",
+     "w": 1600,
+     "h": 1200,
+     "p": [
+      62
+     ],
+     "from": "Gallery"
+    },
+    {
+     "f": "075_gallery_Praveena-Ranga-Rao-kaka-Sagar-Kaka-Narender-Mamaya.jpg",
+     "c": "Praveena, Ranga Rao kaka, Sagar Kaka, Narender Mamaya and Abhi",
+     "n": "",
+     "w": 960,
+     "h": 692,
+     "p": [
+      89,
+      125,
+      128,
+      61
+     ],
+     "from": "Gallery"
+    },
+    {
+     "f": "076_gallery_Neeradha-atha-and-Narinder-mamaya.jpg",
+     "c": "Neeradha atha and Narinder mamaya",
+     "n": "",
+     "w": 1098,
+     "h": 1600,
+     "p": [
+      277,
+      128
+     ],
+     "from": "Gallery"
+    },
+    {
+     "f": "077_gallery_Namratha-Shreya-and-Rohan.jpg",
+     "c": "Namratha, Shreya and Rohan",
+     "n": "",
+     "w": 1600,
+     "h": 1205,
+     "p": [
+      96,
+      161,
+      162
+     ],
+     "from": "Gallery"
+    },
+    {
+     "f": "078_gallery_Subhadra-Chinamma.jpg",
+     "c": "Subhadra Chinamma",
+     "n": "",
+     "w": 1200,
+     "h": 1600,
+     "p": [
+      347
+     ],
+     "from": "Gallery"
+    },
+    {
+     "f": "079_gallery_Rahuveer-kaka.jpg",
+     "c": "Rahuveer kaka",
+     "n": "",
+     "w": 1200,
+     "h": 1600,
+     "p": [
+      346
+     ],
+     "from": "Gallery"
+    },
+    {
+     "f": "080_gallery_Prassu-s-Kria-montessori-school.jpg",
+     "c": "Prassu's Kria montessori school",
+     "n": "",
+     "w": 1204,
+     "h": 1600,
+     "p": [],
+     "from": "Gallery"
+    }
+   ]
+  }
+ ]
+}
