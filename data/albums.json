@@ -1,15 +1,44 @@
 {
  "albums": [
   {
-   "id": "old-site",
-   "title": "From the old erraballi.org",
-   "when": "posted 2017 onward",
-   "place": "Kalleda, Hyderabad, the Bay Area and travels",
-   "by": "the first family website",
-   "about": "Every photo from the Home and Gallery pages of the first erraballi.org, saved in November 2026. Names were tagged from the old captions; some photos have no caption yet.",
+   "id": "kalleda",
+   "title": "Kalleda & Warangal",
+   "place": "Kalleda and Warangal district",
+   "by": "the first erraballi.org",
+   "about": "The village, the house and the land. Saved from the first erraballi.org in November 2026; names were tagged from the old captions.",
    "dir": "img/albums/old-site",
-   "cover": "007_home_Apta-Vikram-in-Kalleda.jpg",
+   "cover": "005_home_DSC00239.jpg",
    "photos": [
+    {
+     "f": "005_home_DSC00239.jpg",
+     "c": "",
+     "n": "",
+     "w": 1600,
+     "h": 1200,
+     "p": [],
+     "from": "Home"
+    },
+    {
+     "f": "007_home_Apta-Vikram-in-Kalleda.jpg",
+     "c": "Apta & Vikram in Kalleda",
+     "n": "",
+     "w": 1600,
+     "h": 1067,
+     "p": [
+      63,
+      64
+     ],
+     "from": "Home"
+    },
+    {
+     "f": "004_home_Glenns-camera-034.jpg",
+     "c": "",
+     "n": "",
+     "w": 1063,
+     "h": 1600,
+     "p": [],
+     "from": "Home"
+    },
     {
      "f": "001_home_IMG-0520.jpg",
      "c": "",
@@ -29,6 +58,53 @@
      "from": "Home"
     },
     {
+     "f": "043_gallery_Kalleda.jpg",
+     "c": "Kalleda",
+     "n": "",
+     "w": 1280,
+     "h": 960,
+     "p": [],
+     "from": "Gallery"
+    },
+    {
+     "f": "029_gallery_Redlawada-2014.jpg",
+     "c": "Redlawada 2014",
+     "n": "",
+     "w": 1600,
+     "h": 1200,
+     "p": [],
+     "from": "Gallery"
+    },
+    {
+     "f": "051_gallery_Valentines-day.jpg",
+     "c": "Valentines day?",
+     "n": "Kalleda 2014",
+     "w": 960,
+     "h": 540,
+     "p": [
+      82
+     ],
+     "from": "Gallery"
+    },
+    {
+     "f": "028_home_Raghumohan-Kaka-s-farm-house.jpg",
+     "c": "Raghumohan Kaka's farm house",
+     "n": "Warangal",
+     "w": 1600,
+     "h": 1200,
+     "p": [],
+     "from": "Home"
+    },
+    {
+     "f": "022_home_RDF-Kalleda-school-Archery-demo.jpg",
+     "c": "RDF Kalleda school Archery demo",
+     "n": "",
+     "w": 776,
+     "h": 732,
+     "p": [],
+     "from": "Home"
+    },
+    {
      "f": "003_home_215064741-7fd1e9fe11.jpg",
      "c": "",
      "n": "",
@@ -38,140 +114,31 @@
      "from": "Home"
     },
     {
-     "f": "004_home_Glenns-camera-034.jpg",
-     "c": "",
+     "f": "021_home_portrait-of-a-kalleda-native.jpg",
+     "c": "portrait of a kalleda native",
      "n": "",
-     "w": 1063,
-     "h": 1600,
+     "w": 348,
+     "h": 300,
      "p": [],
      "from": "Home"
-    },
-    {
-     "f": "005_home_DSC00239.jpg",
-     "c": "",
-     "n": "",
-     "w": 1600,
-     "h": 1200,
-     "p": [],
-     "from": "Home"
-    },
+    }
+   ]
+  },
+  {
+   "id": "family",
+   "title": "Family",
+   "place": "Hyderabad, the US and beyond",
+   "by": "the first erraballi.org",
+   "about": "Visits, portraits and get-togethers across the family. Saved from the first erraballi.org in November 2026; names were tagged from the old captions.",
+   "dir": "img/albums/old-site",
+   "cover": "020_home_DSC-4090-copy.jpg",
+   "photos": [
     {
      "f": "006_home_MG-0434.jpg",
      "c": "",
      "n": "",
      "w": 1152,
      "h": 768,
-     "p": [],
-     "from": "Home"
-    },
-    {
-     "f": "007_home_Apta-Vikram-in-Kalleda.jpg",
-     "c": "Apta & Vikram in Kalleda",
-     "n": "",
-     "w": 1600,
-     "h": 1067,
-     "p": [
-      63,
-      64
-     ],
-     "from": "Home"
-    },
-    {
-     "f": "008_home_Shanghai-China.jpg",
-     "c": "Shanghai, China",
-     "n": "",
-     "w": 460,
-     "h": 460,
-     "p": [],
-     "from": "Home"
-    },
-    {
-     "f": "009_home_Costa-Rica.jpg",
-     "c": "Costa Rica",
-     "n": "",
-     "w": 1280,
-     "h": 960,
-     "p": [],
-     "from": "Home"
-    },
-    {
-     "f": "010_home_Costa-Rica.jpg",
-     "c": "Costa Rica",
-     "n": "",
-     "w": 1036,
-     "h": 816,
-     "p": [],
-     "from": "Home"
-    },
-    {
-     "f": "011_home_London.jpg",
-     "c": "London",
-     "n": "",
-     "w": 1600,
-     "h": 1200,
-     "p": [],
-     "from": "Home"
-    },
-    {
-     "f": "012_home_UK-Parliament.jpg",
-     "c": "UK Parliament",
-     "n": "",
-     "w": 1600,
-     "h": 1200,
-     "p": [],
-     "from": "Home"
-    },
-    {
-     "f": "013_home_Kenya-safari.jpg",
-     "c": "Kenya safari",
-     "n": "",
-     "w": 1600,
-     "h": 1200,
-     "p": [],
-     "from": "Home"
-    },
-    {
-     "f": "014_home_Serengeti-Tanzania.jpg",
-     "c": "Serengeti, Tanzania",
-     "n": "",
-     "w": 1600,
-     "h": 1200,
-     "p": [],
-     "from": "Home"
-    },
-    {
-     "f": "015_home_Dubai.jpg",
-     "c": "Dubai",
-     "n": "",
-     "w": 800,
-     "h": 533,
-     "p": [],
-     "from": "Home"
-    },
-    {
-     "f": "016_home_Kenya.jpg",
-     "c": "Kenya",
-     "n": "",
-     "w": 800,
-     "h": 600,
-     "p": [],
-     "from": "Home"
-    },
-    {
-     "f": "017_home_Costa-Rica.jpg",
-     "c": "Costa Rica",
-     "n": "",
-     "w": 1024,
-     "h": 533,
-     "p": [],
-     "from": "Home"
-    },
-    {
-     "f": "018_home_Beijing-China.jpg",
-     "c": "Beijing, China",
-     "n": "",
-     "w": 1600,
-     "h": 1267,
      "p": [],
      "from": "Home"
     },
@@ -199,91 +166,6 @@
      "from": "Home"
     },
     {
-     "f": "021_home_portrait-of-a-kalleda-native.jpg",
-     "c": "portrait of a kalleda native",
-     "n": "",
-     "w": 348,
-     "h": 300,
-     "p": [],
-     "from": "Home"
-    },
-    {
-     "f": "022_home_RDF-Kalleda-school-Archery-demo.jpg",
-     "c": "RDF Kalleda school Archery demo",
-     "n": "",
-     "w": 776,
-     "h": 732,
-     "p": [],
-     "from": "Home"
-    },
-    {
-     "f": "023_home_SF-Bay-area.jpg",
-     "c": "SF Bay area",
-     "n": "",
-     "w": 1600,
-     "h": 1067,
-     "p": [],
-     "from": "Home"
-    },
-    {
-     "f": "024_home_Quebec.jpg",
-     "c": "Quebec",
-     "n": "",
-     "w": 1600,
-     "h": 1200,
-     "p": [],
-     "from": "Home"
-    },
-    {
-     "f": "025_home_Karthik-Shah-s-wedding.jpg",
-     "c": "Karthik Shah's wedding",
-     "n": "",
-     "w": 539,
-     "h": 960,
-     "p": [
-      68
-     ],
-     "from": "Home"
-    },
-    {
-     "f": "026_home_At-Karthik-Shah-s-wedding-Dec-2015.jpg",
-     "c": "At Karthik Shah's wedding Dec 2015",
-     "n": "",
-     "w": 960,
-     "h": 540,
-     "p": [
-      68
-     ],
-     "from": "Home"
-    },
-    {
-     "f": "027_home_Mexico-Cruise.jpg",
-     "c": "Mexico Cruise",
-     "n": "",
-     "w": 1600,
-     "h": 1093,
-     "p": [],
-     "from": "Home"
-    },
-    {
-     "f": "028_home_Raghumohan-Kaka-s-farm-house.jpg",
-     "c": "Raghumohan Kaka's farm house",
-     "n": "Warangal",
-     "w": 1600,
-     "h": 1200,
-     "p": [],
-     "from": "Home"
-    },
-    {
-     "f": "029_gallery_Redlawada-2014.jpg",
-     "c": "Redlawada 2014",
-     "n": "",
-     "w": 1600,
-     "h": 1200,
-     "p": [],
-     "from": "Gallery"
-    },
-    {
      "f": "030_gallery_Rushil-Dhruva.jpg",
      "c": "Rushil & Dhruva",
      "n": "July 2018",
@@ -305,32 +187,12 @@
      "from": "Gallery"
     },
     {
-     "f": "032_gallery_Napa-Valley.jpg",
-     "c": "Napa Valley",
-     "n": "",
-     "w": 1600,
-     "h": 1200,
-     "p": [],
-     "from": "Gallery"
-    },
-    {
      "f": "033_gallery_Pooja.jpg",
      "c": "Pooja",
      "n": "",
      "w": 1600,
      "h": 1200,
      "p": [],
-     "from": "Gallery"
-    },
-    {
-     "f": "034_gallery_Gautham-s-wedding.jpg",
-     "c": "At Gautham's wedding",
-     "n": "",
-     "w": 1600,
-     "h": 1200,
-     "p": [
-      332
-     ],
      "from": "Gallery"
     },
     {
@@ -351,15 +213,6 @@
      "n": "",
      "w": 1024,
      "h": 669,
-     "p": [],
-     "from": "Gallery"
-    },
-    {
-     "f": "037_gallery_Hilton-Head-2012.jpg",
-     "c": "At Hilton Head 2012",
-     "n": "",
-     "w": 1559,
-     "h": 1600,
      "p": [],
      "from": "Gallery"
     },
@@ -409,15 +262,6 @@
      "f": "042_gallery_Mukerjee-sahib-s.jpg",
      "c": "Mukerjee sahib's",
      "n": "soon to move in..",
-     "w": 1280,
-     "h": 960,
-     "p": [],
-     "from": "Gallery"
-    },
-    {
-     "f": "043_gallery_Kalleda.jpg",
-     "c": "Kalleda",
-     "n": "",
      "w": 1280,
      "h": 960,
      "p": [],
@@ -497,17 +341,6 @@
      "from": "Gallery"
     },
     {
-     "f": "051_gallery_Valentines-day.jpg",
-     "c": "Valentines day?",
-     "n": "Kalleda 2014",
-     "w": 960,
-     "h": 540,
-     "p": [
-      82
-     ],
-     "from": "Gallery"
-    },
-    {
      "f": "052_gallery_Kasuganti-family.jpg",
      "c": "Kasuganti family",
      "n": "",
@@ -574,87 +407,6 @@
      "from": "Gallery"
     },
     {
-     "f": "059_gallery_California-poppies-spring-bloom-Fremont.jpg",
-     "c": "California poppies, spring bloom, Fremont",
-     "n": "",
-     "w": 1600,
-     "h": 1200,
-     "p": [],
-     "from": "Gallery"
-    },
-    {
-     "f": "060_gallery_Spring-time-in-Fremont.jpg",
-     "c": "Spring time in Fremont",
-     "n": "",
-     "w": 640,
-     "h": 478,
-     "p": [],
-     "from": "Gallery"
-    },
-    {
-     "f": "061_gallery_Alum-Rock-CA.jpg",
-     "c": "Alum Rock, CA",
-     "n": "",
-     "w": 1600,
-     "h": 1200,
-     "p": [],
-     "from": "Gallery"
-    },
-    {
-     "f": "062_gallery_Quebec.jpg",
-     "c": "Quebec",
-     "n": "",
-     "w": 1600,
-     "h": 1200,
-     "p": [],
-     "from": "Gallery"
-    },
-    {
-     "f": "063_gallery_Fremont-Older.jpg",
-     "c": "Fremont Older",
-     "n": "",
-     "w": 1200,
-     "h": 1600,
-     "p": [],
-     "from": "Gallery"
-    },
-    {
-     "f": "064_gallery_Hindu-Kush-mountains.jpg",
-     "c": "Hindu Kush mountains",
-     "n": "Shandur Pass at 14,000'",
-     "w": 1536,
-     "h": 1024,
-     "p": [],
-     "from": "Gallery"
-    },
-    {
-     "f": "065_gallery_White-Mountain-CA-14-000.jpg",
-     "c": "White Mountain, CA - 14,000'",
-     "n": "",
-     "w": 1600,
-     "h": 1200,
-     "p": [],
-     "from": "Gallery"
-    },
-    {
-     "f": "066_gallery_Heavenly-2016.jpg",
-     "c": "Heavenly 2016",
-     "n": "",
-     "w": 1600,
-     "h": 585,
-     "p": [],
-     "from": "Gallery"
-    },
-    {
-     "f": "067_gallery_Yosemite.jpg",
-     "c": "Yosemite",
-     "n": "",
-     "w": 1600,
-     "h": 1200,
-     "p": [],
-     "from": "Gallery"
-    },
-    {
      "f": "068_gallery_Four-erraballi-s.jpg",
      "c": "Four erraballi's",
      "n": "",
@@ -672,17 +424,6 @@
      "p": [
       64,
       63
-     ],
-     "from": "Gallery"
-    },
-    {
-     "f": "070_gallery_Aditya-single-no-more.jpg",
-     "c": "Aditya single no more!",
-     "n": "",
-     "w": 1457,
-     "h": 894,
-     "p": [
-      349
      ],
      "from": "Gallery"
     },
@@ -797,6 +538,297 @@
      "n": "",
      "w": 1204,
      "h": 1600,
+     "p": [],
+     "from": "Gallery"
+    }
+   ]
+  },
+  {
+   "id": "weddings",
+   "title": "Weddings",
+   "place": "",
+   "by": "the first erraballi.org",
+   "about": "Karthik Shah’s, Gautham’s and Aditya’s weddings. Saved from the first erraballi.org in November 2026; names were tagged from the old captions.",
+   "dir": "img/albums/old-site",
+   "cover": "025_home_Karthik-Shah-s-wedding.jpg",
+   "photos": [
+    {
+     "f": "025_home_Karthik-Shah-s-wedding.jpg",
+     "c": "Karthik Shah's wedding",
+     "n": "",
+     "w": 539,
+     "h": 960,
+     "p": [
+      68
+     ],
+     "from": "Home"
+    },
+    {
+     "f": "026_home_At-Karthik-Shah-s-wedding-Dec-2015.jpg",
+     "c": "At Karthik Shah's wedding Dec 2015",
+     "n": "",
+     "w": 960,
+     "h": 540,
+     "p": [
+      68
+     ],
+     "from": "Home"
+    },
+    {
+     "f": "034_gallery_Gautham-s-wedding.jpg",
+     "c": "At Gautham's wedding",
+     "n": "",
+     "w": 1600,
+     "h": 1200,
+     "p": [
+      332
+     ],
+     "from": "Gallery"
+    },
+    {
+     "f": "070_gallery_Aditya-single-no-more.jpg",
+     "c": "Aditya single no more!",
+     "n": "",
+     "w": 1457,
+     "h": 894,
+     "p": [
+      349
+     ],
+     "from": "Gallery"
+    }
+   ]
+  },
+  {
+   "id": "travels",
+   "title": "Travels",
+   "place": "",
+   "by": "the first erraballi.org",
+   "about": "Trips and hikes, from Kenya to the Sierra. Saved from the first erraballi.org in November 2026; names were tagged from the old captions.",
+   "dir": "img/albums/old-site",
+   "cover": "014_home_Serengeti-Tanzania.jpg",
+   "photos": [
+    {
+     "f": "008_home_Shanghai-China.jpg",
+     "c": "Shanghai, China",
+     "n": "",
+     "w": 460,
+     "h": 460,
+     "p": [],
+     "from": "Home"
+    },
+    {
+     "f": "018_home_Beijing-China.jpg",
+     "c": "Beijing, China",
+     "n": "",
+     "w": 1600,
+     "h": 1267,
+     "p": [],
+     "from": "Home"
+    },
+    {
+     "f": "011_home_London.jpg",
+     "c": "London",
+     "n": "",
+     "w": 1600,
+     "h": 1200,
+     "p": [],
+     "from": "Home"
+    },
+    {
+     "f": "012_home_UK-Parliament.jpg",
+     "c": "UK Parliament",
+     "n": "",
+     "w": 1600,
+     "h": 1200,
+     "p": [],
+     "from": "Home"
+    },
+    {
+     "f": "013_home_Kenya-safari.jpg",
+     "c": "Kenya safari",
+     "n": "",
+     "w": 1600,
+     "h": 1200,
+     "p": [],
+     "from": "Home"
+    },
+    {
+     "f": "016_home_Kenya.jpg",
+     "c": "Kenya",
+     "n": "",
+     "w": 800,
+     "h": 600,
+     "p": [],
+     "from": "Home"
+    },
+    {
+     "f": "014_home_Serengeti-Tanzania.jpg",
+     "c": "Serengeti, Tanzania",
+     "n": "",
+     "w": 1600,
+     "h": 1200,
+     "p": [],
+     "from": "Home"
+    },
+    {
+     "f": "015_home_Dubai.jpg",
+     "c": "Dubai",
+     "n": "",
+     "w": 800,
+     "h": 533,
+     "p": [],
+     "from": "Home"
+    },
+    {
+     "f": "009_home_Costa-Rica.jpg",
+     "c": "Costa Rica",
+     "n": "",
+     "w": 1280,
+     "h": 960,
+     "p": [],
+     "from": "Home"
+    },
+    {
+     "f": "010_home_Costa-Rica.jpg",
+     "c": "Costa Rica",
+     "n": "",
+     "w": 1036,
+     "h": 816,
+     "p": [],
+     "from": "Home"
+    },
+    {
+     "f": "017_home_Costa-Rica.jpg",
+     "c": "Costa Rica",
+     "n": "",
+     "w": 1024,
+     "h": 533,
+     "p": [],
+     "from": "Home"
+    },
+    {
+     "f": "024_home_Quebec.jpg",
+     "c": "Quebec",
+     "n": "",
+     "w": 1600,
+     "h": 1200,
+     "p": [],
+     "from": "Home"
+    },
+    {
+     "f": "062_gallery_Quebec.jpg",
+     "c": "Quebec",
+     "n": "",
+     "w": 1600,
+     "h": 1200,
+     "p": [],
+     "from": "Gallery"
+    },
+    {
+     "f": "027_home_Mexico-Cruise.jpg",
+     "c": "Mexico Cruise",
+     "n": "",
+     "w": 1600,
+     "h": 1093,
+     "p": [],
+     "from": "Home"
+    },
+    {
+     "f": "064_gallery_Hindu-Kush-mountains.jpg",
+     "c": "Hindu Kush mountains",
+     "n": "Shandur Pass at 14,000'",
+     "w": 1536,
+     "h": 1024,
+     "p": [],
+     "from": "Gallery"
+    },
+    {
+     "f": "037_gallery_Hilton-Head-2012.jpg",
+     "c": "At Hilton Head 2012",
+     "n": "",
+     "w": 1559,
+     "h": 1600,
+     "p": [],
+     "from": "Gallery"
+    },
+    {
+     "f": "032_gallery_Napa-Valley.jpg",
+     "c": "Napa Valley",
+     "n": "",
+     "w": 1600,
+     "h": 1200,
+     "p": [],
+     "from": "Gallery"
+    },
+    {
+     "f": "023_home_SF-Bay-area.jpg",
+     "c": "SF Bay area",
+     "n": "",
+     "w": 1600,
+     "h": 1067,
+     "p": [],
+     "from": "Home"
+    },
+    {
+     "f": "059_gallery_California-poppies-spring-bloom-Fremont.jpg",
+     "c": "California poppies, spring bloom, Fremont",
+     "n": "",
+     "w": 1600,
+     "h": 1200,
+     "p": [],
+     "from": "Gallery"
+    },
+    {
+     "f": "060_gallery_Spring-time-in-Fremont.jpg",
+     "c": "Spring time in Fremont",
+     "n": "",
+     "w": 640,
+     "h": 478,
+     "p": [],
+     "from": "Gallery"
+    },
+    {
+     "f": "061_gallery_Alum-Rock-CA.jpg",
+     "c": "Alum Rock, CA",
+     "n": "",
+     "w": 1600,
+     "h": 1200,
+     "p": [],
+     "from": "Gallery"
+    },
+    {
+     "f": "063_gallery_Fremont-Older.jpg",
+     "c": "Fremont Older",
+     "n": "",
+     "w": 1200,
+     "h": 1600,
+     "p": [],
+     "from": "Gallery"
+    },
+    {
+     "f": "065_gallery_White-Mountain-CA-14-000.jpg",
+     "c": "White Mountain, CA - 14,000'",
+     "n": "",
+     "w": 1600,
+     "h": 1200,
+     "p": [],
+     "from": "Gallery"
+    },
+    {
+     "f": "066_gallery_Heavenly-2016.jpg",
+     "c": "Heavenly 2016",
+     "n": "",
+     "w": 1600,
+     "h": 585,
+     "p": [],
+     "from": "Gallery"
+    },
+    {
+     "f": "067_gallery_Yosemite.jpg",
+     "c": "Yosemite",
+     "n": "",
+     "w": 1600,
+     "h": 1200,
      "p": [],
      "from": "Gallery"
     }

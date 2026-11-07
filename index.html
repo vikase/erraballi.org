@@ -738,7 +738,7 @@ function inPhotosHTML(p){const l=photosOf(p);if(!l.length)return '';
   return `<h3>In ${l.length} photo${l.length>1?'s':''}</h3><div class="inph">${l.slice(0,6).map(({a,ph},i)=>`<button data-i="${i}" style="background-image:url('${src(a,ph,'thumb')}')" aria-label="${escH(photoTitle(ph))}"></button>`).join('')}</div>${l.length>6?`<button class="tb" id="allPh" style="margin-top:8px">See all ${l.length}</button>`:''}`;}
 function wireInPhotos(p){const box=panel.querySelector('#inPhotos');if(!box)return;const l=photosOf(p);
   box.querySelectorAll('.inph button').forEach(b=>b.onclick=()=>openLB(l,+b.dataset.i));
-  const all=box.querySelector('#allPh');if(all)all.onclick=()=>{albOpen=l[0].a.id;albPerson=p.id;show('albums');};}
+  const all=box.querySelector('#allPh');if(all)all.onclick=()=>openLB(l,0);}
 function renderAlbums(){const out=document.getElementById('albOut');
   const a=ALBUMS.find(x=>x.id===albOpen&&x.photos);
   if(!a){out.innerHTML=`<h1>Family albums</h1><p class="lede">Photos from across the family. Tap a photo to see who is in it, and tap a name to find that person on the tree.</p>
