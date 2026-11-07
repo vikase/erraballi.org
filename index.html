@@ -404,9 +404,29 @@ const spW=p=>p.g==='M'?'husband':p.g==='F'?'wife':'spouse';
 function termTo(p){ // what p is to the viewer
   if(!chosen)return ''; const me=byId.get(ME); if(p.id===ME)return 'you';
   if(p.spouses.includes(ME))return 'your '+spW(p);
-  const a2=p.desc?p:spousesOf(p).find(s=>s.desc), b2=me.desc?me:spousesOf(me).find(s=>s.desc);
-  if(!a2||!b2)return ''; const r=bloodRel(a2,b2); if(!r)return '';
-  return (a2===p?'':spW(p)+' of ')+'your '+(b2===me?'':spW(b2)+'’s ')+r.t;
+  let a2=p.desc?p:spousesOf(p).find(s=>s.desc), b2=me.desc?me:spousesOf(me).find(s=>s.desc);
+  if(!a2||!b2)return ''; let r=null;
+  // the same for a person who married in and is the parent of the viewer's spouse: "your mother-in-law"
+  if(!p.desc&&ancestors(b2.id).has(p.id)){r=bloodRel(p,b2); if(r)a2=p;}
+  // a viewer who married in is still the parent/grandparent of their own children: say "your son", not "your husband's son"
+  if(!r&&!me.desc&&ancestors(a2.id).has(ME)){r=bloodRel(a2,me); if(r)b2=me;}
+  if(!r)r=bloodRel(a2,b2); if(!r)return '';
+  return inLaw(p,a2,me,b2,r.t);
+}
+function inLaw(p,a2,me,b2,t){ // plain-English in-law words where they exist
+  const g=(x,m,f,n)=>x.g==='M'?m:x.g==='F'?f:n;
+  const pre=a2!==p, suf=b2!==me;
+  const child=/^((great-)*grand)?(son|daughter|child)$/, sib=/^(half-)?(brother|sister|sibling)$/, par=/^((great-)*grand)?(father|mother|parent)$/;
+  if(pre&&!suf){ // p married one of your blood relatives
+    if(child.test(t))return 'your '+t.replace(/(son|daughter|child)$/,g(p,'son','daughter','child'))+'-in-law';
+    if(sib.test(t))return 'your '+g(p,'brother','sister','sibling')+'-in-law';
+  }
+  if(!pre&&suf){ // p is a blood relative of your spouse
+    if(par.test(t))return 'your '+t.replace(/(father|mother|parent)$/,g(p,'father','mother','parent'))+'-in-law';
+    if(sib.test(t))return 'your '+g(p,'brother','sister','sibling')+'-in-law';
+  }
+  if(pre&&suf&&sib.test(t))return 'your '+g(p,'brother','sister','sibling')+'-in-law'; // your spouse's sibling's spouse
+  return (pre?spW(p)+' of ':'')+'your '+(suf?spW(b2)+'’s ':'')+t;
 }
 const gender=p=>{const r=p.rel.toLowerCase();
   if(/\b(wife|mother|grandmother|aunt|sister|daughter|self)\b/.test(r)) return r.includes('self')?'M':'F';
