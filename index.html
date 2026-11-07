@@ -343,7 +343,7 @@ const named=p=>p.name!=='(name not given)';
 const short=p=>named(p)?p.name:'(name not given)';
 const years=p=>(p.born||p.died)?`${p.born||'?'}–${p.died||''}`:'';
 // Family members who have their own page. Add one line per page. When the site moves to the repo, the url becomes the path (e.g. /vijay/).
-const STORIES={199:{title:'My Life Journey',by:'his autobiography, in his own words',url:'https://claude.ai/artifact/2xSYqhc52GdbkXq5Cwh5rh'}};
+const STORIES={199:{title:'My Life Journey',by:'his autobiography, in his own words',url:'vijay/'}};
 
 // ---------- mode (public / family) ----------
 // Decision 2026-11-06: the site is public for now. Set GATED=true to bring back the family-code view.
@@ -471,7 +471,7 @@ function openPerson(p){current=p;show('tree');const sp=spousesOf(p), ch=children
     <p class="rel">${chosen&&p.id===ME?'That’s you':termTo(p)}</p>
     <div id="faceTools"></div>
     <dl>${rows.map(([k,v])=>`<dt>${k}</dt><dd>${v}</dd>`).join('')}</dl>
-    ${STORIES[p.id]?`<a class="story" href="${STORIES[p.id].url}" target="_blank" rel="noopener"><small>Read the story</small><b>${STORIES[p.id].title}</b><span>${STORIES[p.id].by} →</span></a>`:''}
+    ${STORIES[p.id]?`<a class="story" href="${STORIES[p.id].url}" ><small>Read the story</small><b>${STORIES[p.id].title}</b><span>${STORIES[p.id].by} →</span></a>`:''}
     ${pa.length?`<h3>Parents</h3><div class="chips">${pa.map(chip).join('')}</div>`:''}
     ${sp.length?`<h3>${sp.length>1?'Spouses':'Spouse'}</h3><div class="chips">${sp.map(chip).join('')}</div>`:''}
     ${ch.length?`<h3>Children</h3><div class="chips">${ch.map(chip).join('')}</div>`:''}
