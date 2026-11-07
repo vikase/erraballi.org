@@ -1,0 +1,15 @@
+{
+ "about": "One entry per family story. person = the id in data/people.psv. status: live (shown on the site) or draft (not shown). url is relative to the site root.",
+ "stories": [
+  {
+   "person": 199,
+   "title": "My Life Journey",
+   "by": "his autobiography, in his own words",
+   "url": "vijay/",
+   "kind": "written",
+   "approved_by": "Vikas (with Thatayya’s November 2026 answers)",
+   "status": "live",
+   "added": "2026-11-07"
+  }
+ ]
+}

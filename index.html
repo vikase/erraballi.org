@@ -64,6 +64,11 @@ header.top{display:flex;align-items:center;gap:18px;flex-wrap:wrap;border-bottom
 nav.views{display:flex;gap:2px;margin-left:auto}
 nav.views button{border:0;background:transparent;padding:6px 12px;border-radius:999px;color:var(--muted);font-weight:500}
 nav.views button[aria-current="true"]{background:var(--maroon-soft);color:var(--maroon)}
+nav.views a.navlink{padding:6px 12px;border-radius:999px;color:var(--muted);font-weight:500;text-decoration:none;white-space:nowrap;flex:none}
+nav.views a.navlink:hover{color:var(--maroon)}
+.askstory{display:block;margin:4px 0 16px;padding:10px 14px;border-radius:12px;border:1px dashed var(--line-strong);color:var(--fg);text-decoration:none;font-size:13.5px}
+.askstory b{color:var(--maroon);font-weight:600}
+.askstory:hover{border-color:var(--maroon);background:var(--maroon-soft)}
 .you{display:inline-flex;align-items:center;gap:7px;border:1px solid var(--line-strong);border-radius:999px;padding:5px 12px 5px 8px;background:transparent;font-size:13px}
 .you .dot{width:8px;height:8px;border-radius:50%;background:var(--leaf)}
 .you b{font-weight:600}
@@ -302,6 +307,7 @@ main{flex:1;min-height:0;position:relative;display:flex}
     <button data-view="map">Where we are</button>
     <button data-view="month">This month</button>
     <button data-view="albums">Albums</button>
+    <a class="navlink" href="stories/">Stories</a>
   </nav>
   <button class="you" id="youBtn" title="Change who you are"><span class="dot"></span><span id="youTxt"><small>Seen from </small><b>nobody’s side</b></span></button>
   <div class="mode" id="mode"></div>
@@ -398,8 +404,19 @@ const spousesOf=p=>p.spouses.map(id=>byId.get(id)).filter(Boolean);
 const named=p=>p.name!=='(name not given)';
 const short=p=>named(p)?p.name:'(name not given)';
 const years=p=>(p.born||p.died)?`${p.born||'?'}–${p.died||''}`:'';
-// Family members who have their own page. Add one line per page. When the site moves to the repo, the url becomes the path (e.g. /vijay/).
+// Family members who have their own story page. The list is in data/stories.json (one entry per story, keyed by person id);
+// it loads after the tree. The line below is only the fallback if that file does not load.
 const STORIES={199:{title:'My Life Journey',by:'his autobiography, in his own words',url:'vijay/'}};
+fetch('data/stories.json',{cache:'no-cache'}).then(r=>r.ok?r.json():null).then(d=>{if(!d||!d.stories)return;
+  d.stories.filter(x=>x.status==='live').forEach(x=>{STORIES[x.person]={title:x.title,by:x.by,url:x.url};});
+  update(); if(current)openPerson(current);}).catch(()=>{});
+// A card with no story gets a prompt: elders (born 1955 or before) to record theirs, those who have passed to share a memory.
+function askStoryHTML(p){if(STORIES[p.id]||!named(p))return '';
+  const first=short(p).split(' ')[0], q='stories/?person='+p.id;
+  if(chosen&&p.id===ME)return `<a class="askstory" href="${q}#send"><b>Tell your story</b> · write it, or ask someone to record you →</a>`;
+  if(!p.living)return `<a class="askstory" href="${q}#send"><b>Share a memory of ${first}</b> · something you saw, or a story you were told →</a>`;
+  if(+p.born&&+p.born<=1955)return `<a class="askstory" href="${q}#record"><b>Record ${first}’s story</b> · a phone and an hour is enough. Here’s how →</a>`;
+  return '';}
 
 // ---------- mode (public / family) ----------
 // Decision 2026-11-06: the site is public for now. Set GATED=true to bring back the family-code view.
@@ -528,6 +545,7 @@ function openPerson(p){current=p;show('tree');const sp=spousesOf(p), ch=children
     <div id="faceTools"></div>
     <dl>${rows.map(([k,v])=>`<dt>${k}</dt><dd>${v}</dd>`).join('')}</dl>
     ${STORIES[p.id]?`<a class="story" href="${STORIES[p.id].url}" ><small>Read the story</small><b>${STORIES[p.id].title}</b><span>${STORIES[p.id].by} →</span></a>`:''}
+    ${askStoryHTML(p)}
     <div id="inPhotos">${inPhotosHTML(p)}</div>
     ${pa.length?`<h3>Parents</h3><div class="chips">${pa.map(chip).join('')}</div>`:''}
     ${sp.length?`<h3>${sp.length>1?'Spouses':'Spouse'}</h3><div class="chips">${sp.map(chip).join('')}</div>`:''}
@@ -807,6 +825,8 @@ function refreshAll(){update();renderMap();renderMonth();if(current)openPerson(c
 renderMode(); sizeTree(); update(); renderMap(); renderMonth(); renderYou();
 let looked=false; try{looked=localStorage.getItem('erraballi-looked')==='1';}catch(e){}
 welcome.hidden=chosen||looked;
+// A link like erraballi.org/#p=199 (from a story page) opens that person's card.
+const hp=/^#p=(\d+)$/.exec(location.hash||''); if(hp&&byId.has(+hp[1])){welcome.hidden=true;const x=byId.get(+hp[1]);setTimeout(()=>{reveal(x.id);openPerson(x);},0);}
 svg.call(zoom.transform,d3.zoomIdentity.translate(180,document.querySelector('.canvas').getBoundingClientRect().height/2));
 window.addEventListener('resize',sizeTree);
 }
