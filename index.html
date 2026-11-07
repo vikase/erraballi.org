@@ -880,7 +880,7 @@ function openReview(){current=null;
   if(!window.claude){
     if(!ENDPOINT)return;
     try{const j=await (await fetch(ENDPOINT+'?faces=1')).json();
-      Object.entries(j.faces||{}).forEach(([k,v])=>{if(!FACES[+k])FACES[+k]=v;}); ASKED=j.asked||{}; REACH=new Set(j.reach||[]);
+      Object.entries(j.faces||{}).forEach(([k,v])=>{if(!FACES[+k])FACES[+k]=v;}); ASKED=j.asked||{}; REACH=new Set(j.reach||[]); applyValues(j.values);
       update(); renderMonth(); if(current)openPerson(current);}catch(e){}
     return;}
   try{ userH=await claude.use('user'); }catch(e){}
@@ -898,10 +898,13 @@ document.getElementById('reviewBtn').onclick=openReview;
 // After a visitor picks "I am ...", a small note asks for what the tree is missing: their own birthday, city and work,
 // and the same for their close family (parents, spouse, children, brothers and sisters). Email and phone come only from
 // the person themselves. Everything goes to ENDPOINT (kind "details"), into Vikas's private sheet "erraballi.org inbox";
-// it shows on the site after Vikas copies it to the master sheet. Emails and phone numbers never go to the site.
+// birthday, city and work also go into the master sheet and show on the site at once. Emails and phone numbers never go to the site.
 // ASKED: fields someone already sent for a person (so we do not ask again). REACH: people who allow messages.
 // A "Message" button on their card sends through the script (kind "message"); the sender never sees the address.
 let ASKED={}, REACH=new Set();
+// Live values from the master sheet (through ENDPOINT) win over data/people.psv, so new answers show at once.
+function applyValues(v){Object.entries(v||{}).forEach(([id,o])=>{const p=byId.get(+id);if(!p)return;
+  ['bday','city','occ'].forEach(f=>{if(o[f]!=null&&String(o[f]).trim())p[f]=String(o[f]).trim();});});}
 const ASK_FIELDS=[['bday','birthday'],['city','city'],['occ','work']];
 const lsGet=(k,d)=>{try{const v=localStorage.getItem(k);return v==null?d:JSON.parse(v);}catch(e){return d;}};
 const lsSet=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}};
@@ -933,7 +936,7 @@ function openAsk(who,all){
     ${fields.length?`<div class="askf">${fieldInputs(x,fields,key)}</div>`:''}${extra||''}</div>`;
   panel.innerHTML=`<button class="close" aria-label="Close">×</button><div class="eyebrow">${self?'Help fill in the tree':'Fix or add details'}</div>
     <h2>${self?'A few things are missing':escH(short(p))}</h2>
-    <p class="rel">${self?'Fill in what you know. Leave the rest blank.':'Fill in what you know about '+escH(short(p).split(' ')[0])+'. Vikas checks each answer before it goes on the tree.'}</p>
+    <p class="rel">${self?'Fill in what you know. Leave the rest blank.':'Fill in what you know about '+escH(short(p).split(' ')[0])+'. It shows on the tree at once.'}</p>
     <form id="askForm" class="ask">
       ${section(p,myMissing,'s',
         (self?`<details class="askc"${contactDone(p.id)?'':' open'}><summary>Stay in touch (optional)</summary>${contactInputs('s')}</details>`:'')+
@@ -961,7 +964,10 @@ function openAsk(who,all){
       const j=await r.json(); if(!j.ok)throw new Error(j.error);
       const sent=lsGet('erraballi-sent',{}); list.forEach(o=>{sent[o.pid]=[...new Set([...(sent[o.pid]||[]),...ASK_FIELDS.map(x=>x[0]).filter(f=>o[f])])];}); lsSet('erraballi-sent',sent);
       if(list[0].email||list[0].phone){lsSet('erraballi-contact-'+p.id,true);}
-      form.innerHTML=`<p class="thanks">Thank you. ${list.length>1?'Your answers are':'Your answer is'} with Vikas. ${list.length>1?'They':'It'} will show on the tree after he adds ${list.length>1?'them':'it'} to the family sheet.</p>`;
+      list.forEach(o=>{const x=byId.get(o.pid);if(!x)return;['bday','city','occ'].forEach(f=>{if(o[f])x[f]=o[f];});});
+      update(); renderMap(); renderMonth();
+      const onlyNote=list.every(o=>!o.bday&&!o.city&&!o.occ);
+      form.innerHTML=`<p class="thanks">Thank you. ${onlyNote?'Your note is with Vikas.':'It is on the tree now.'}${list.some(o=>o.note)&&!onlyNote?' Your note is with Vikas.':''}</p>`;
     }catch(err){btn.disabled=false;ok.textContent='That did not send. Check your connection and try again.';}
   };
 }

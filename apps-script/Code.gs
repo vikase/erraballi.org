@@ -4,12 +4,16 @@
  *
  * What it does
  *   GET  ?faces=1  -> {"faces": {"<personId>": "<image url>"},
+ *                      "values": {"<personId>": {"bday":..,"city":..,"occ":..}}, from the master sheet (live)
  *                      "asked": {"<personId>": ["bday","city","occ"]},  fields someone already sent (not the values)
  *                      "reach": [<personId>, ...]}                       people who said relatives can message them
  *   POST {kind:"face", pid, name, image:"data:image/jpeg;base64,...", by}
  *        -> saves the photo to the Drive folder "erraballi.org faces" and records it in the "Faces" tab.
  *   POST {kind:"details", by, byName, people:[{pid, name, bday, city, occ, note, email, phone, canMessage}]}
- *        -> one row per field in the "Details" tab. Email, phone and canMessage are kept only when the
+ *        -> one row per field in the "Details" tab. Birthday, city and work also go straight into the master
+ *           sheet "Family tree master (erraballi.org)", tab People, so they show on the site at once. A relative
+ *           does not overwrite a field that the person set about themselves. The old value is kept in "Details".
+ *           Notes ("anything to correct") stay in "Details" for a person to read. Email, phone and canMessage are kept only when the
  *           person sends them about themselves (pid == by); they go to the "Contacts" tab (one row per person).
  *   POST {kind:"message", to, from, fromName, replyEmail, replyPhone, text}
  *        -> emails the message to the person (if they allowed messages). The sender never sees the address.
@@ -26,14 +30,17 @@
  *
  * To remove a photo: delete its row in the "Faces" tab (and the file in Drive).
  * To stop messages to a person: set canMessage to FALSE in the "Contacts" tab.
+ * To undo a wrong answer: fix the cell in the master sheet. The "Details" tab shows the old value (oldValue).
  */
 
 const MAX_BYTES = 1500000;      // the site shrinks photos to about 100 KB; this is a safety limit
 const MAX_MESSAGES_PER_DAY = 40; // all senders together; protects the email quota from abuse
+const MASTER_ID = '1pY4EbZRVKolImll693VJv02XRCT3_c8khBLVvlOmses'; // "Family tree master (erraballi.org)"
+const MASTER_COLS = { bday: 'Birthday', city: 'Current city', occ: 'Occupation' }; // header names in tab People
 const TABS = {
   Faces: ['personId', 'name', 'url', 'fileId', 'by', 'at'],
   Inbox: ['at', 'kind', 'json'],
-  Details: ['at', 'personId', 'name', 'field', 'value', 'sentById', 'sentByName', 'done'],
+  Details: ['at', 'personId', 'name', 'field', 'value', 'sentById', 'sentByName', 'oldValue', 'applied'],
   Contacts: ['personId', 'name', 'email', 'phone', 'canMessage', 'updated'],
   Messages: ['at', 'toId', 'toName', 'fromId', 'fromName', 'replyEmail', 'replyPhone', 'text', 'deliveredTo', 'result'],
 };
@@ -80,8 +87,9 @@ function doGet(e) {
     if (id === '' || !/^(bday|city|occ)$/.test(f)) return;
     (asked[id] = asked[id] || []).indexOf(f) < 0 && asked[id].push(f);
   });
+  const values = masterValues_();
   const reach = rows_('Contacts').filter(r => r[4] === true && (r[2] || r[3])).map(r => Number(r[0]));
-  return json_({ faces: faces, asked: asked, reach: reach });
+  return json_({ faces: faces, asked: asked, reach: reach, values: values });
 }
 
 function doPost(e) {
@@ -128,7 +136,14 @@ function saveDetails_(d) {
     const name = str_(x.name);
     ['bday', 'city', 'occ', 'note'].forEach(f => {
       const v = str_(x[f], f === 'note' ? 1000 : 120);
-      if (v) { det.appendRow([now, pid, name, f, v, by >= 0 ? by : '', byName, false]); n++; }
+      if (!v) return;
+      let old = '', applied = 'note';
+      if (f !== 'note') {
+        const self = pid === by, selfSet = !self && setBySelf_(pid, f);
+        if (selfSet) applied = 'no: the person set it';
+        else { const r = writeMaster_(pid, f, v); old = r.old; applied = r.ok ? 'yes' : 'no: ' + r.error; }
+      }
+      det.appendRow([now, pid, name, f, v, by >= 0 ? by : '', byName, old, applied]); n++;
     });
     // Contact details only from the person themselves.
     if (pid === by && (x.email || x.phone || x.canMessage !== undefined)) {
@@ -137,6 +152,45 @@ function saveDetails_(d) {
     }
   });
   return { ok: true, saved: n };
+}
+
+// True if the person already sent this field about themselves.
+function setBySelf_(pid, f) {
+  return rows_('Details').some(r => Number(r[1]) === pid && String(r[3]) === f && Number(r[5]) === pid && String(r[8]) === 'yes');
+}
+function masterSheet_() { return SpreadsheetApp.openById(MASTER_ID).getSheetByName('People'); }
+function writeMaster_(pid, f, v) {
+  try {
+    const sh = masterSheet_(), data = sh.getDataRange().getValues(), head = data[0];
+    const idC = head.indexOf('ID'), c = head.indexOf(MASTER_COLS[f]);
+    if (idC < 0 || c < 0) return { ok: false, error: 'column missing' };
+    for (let i = 1; i < data.length; i++) {
+      if (Number(data[i][idC]) === pid) {
+        const old = String(data[i][c]);
+        sh.getRange(i + 1, c + 1).setNumberFormat('@').setValue(v);
+        CacheService.getScriptCache().remove('master');
+        return { ok: true, old: old };
+      }
+    }
+    return { ok: false, error: 'person not found' };
+  } catch (err) { return { ok: false, error: String(err).slice(0, 100) }; }
+}
+// Birthday, city and work for every person, from the master sheet. Cached for 5 minutes; a new answer clears the cache.
+function masterValues_() {
+  const cache = CacheService.getScriptCache(), hit = cache.get('master');
+  if (hit) return JSON.parse(hit);
+  const out = {};
+  try {
+    const data = masterSheet_().getDataRange().getDisplayValues(), head = data[0], idC = head.indexOf('ID');
+    const cols = Object.keys(MASTER_COLS).map(f => [f, head.indexOf(MASTER_COLS[f])]).filter(x => x[1] >= 0);
+    for (let i = 1; i < data.length; i++) {
+      const id = data[i][idC]; if (id === '') continue;
+      const o = {}; cols.forEach(([f, c]) => { if (data[i][c] !== '') o[f] = data[i][c]; });
+      if (Object.keys(o).length) out[id] = o;
+    }
+    cache.put('master', JSON.stringify(out), 300);
+  } catch (err) {}
+  return out;
 }
 
 function saveContact_(pid, name, email, phone, canMessage) {
