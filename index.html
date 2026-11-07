@@ -706,7 +706,7 @@ function renderMonth(){const now=new Date(), m=now.getMonth();
 // "submissions" until an editor approves them. Signed-out visitors get no db, so they see leaves and initials only.
 // ENDPOINT is the Google Apps Script web app (apps-script/Code.gs). On the public site it stores and serves the photos,
 // and it takes the album form. Paste its /exec URL here. Empty = photo uploads are off on the public site.
-const ENDPOINT='';
+const ENDPOINT='https://script.google.com/macros/s/AKfycbzSTvBgg-_i_tQIlmbpTpHJe-nyrV1y-2Nzaf2fk86ec2zNjC14eg1zAhXlEvsKPLercg/exec';
 const FACES={}; let dbH=null, assetsH=null, userH=null, isEditor=false, pending=[];
 const faceOf=p=>FACES[p.id]||null;
 const initials=p=>named(p)?p.name.split(/\s+/).filter(w=>/^[A-Z]/.test(w)).slice(0,2).map(w=>w[0]).join(''):'·';
