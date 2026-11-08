@@ -50,6 +50,7 @@ This file is for Vikas and for Claude chats in the Family tree project. The publ
 - Write "> " before a quote.
 - Write "Q: " before an interview question.
 - Write ![caption](photo-1.jpg) on its own line for a photo.
+- Write [Name](#p=ID) for a relative who is on the tree. ID is the number in the id column of data/people.psv. The name opens a small card: who the person is to the teller and to the reader. Link only the first mention of a person in each part.
 - Write "---" on its own line for a break between parts.
 
 ## Memories

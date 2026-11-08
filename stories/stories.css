@@ -130,3 +130,21 @@ article.story .q{font-family:var(--body);font-size:15px;font-weight:600;color:va
   body.print-questions #questions{border:0;padding:0}
   .qgroups{columns:2}
 }
+
+/* Names in stories (stories/kin.js): a quiet dotted underline; tap or hover opens a small card about the person. */
+a.kin{color:inherit;text-decoration:underline dotted var(--maroon);text-decoration-thickness:1.5px;text-underline-offset:.22em;cursor:pointer;
+  -webkit-tap-highlight-color:transparent;border-radius:3px}
+a.kin:hover,a.kin[aria-expanded="true"]{color:var(--maroon);background:var(--maroon-soft);text-decoration-style:solid}
+.kincard{position:absolute;z-index:50;background:var(--panel);color:var(--fg);border:1px solid var(--line-strong);border-radius:12px;
+  padding:14px 16px 12px;box-shadow:0 10px 30px rgba(40,30,20,.18);font-family:var(--body);font-size:15px;line-height:1.4}
+.kincard p{margin:0}
+.kincard .kc-name{font-family:var(--display);font-size:19px;font-weight:500;line-height:1.2;padding-right:22px}
+.kincard .kc-yrs{color:var(--muted);font-size:13.5px;margin-top:2px}
+.kincard .kc-his{margin-top:9px}
+.kincard .kc-his span{color:var(--muted);font-size:13.5px}
+.kincard .kc-you{margin-top:4px;color:var(--maroon)}
+.kincard .kc-ask{margin-top:9px;color:var(--muted);font-size:14px}
+.kincard .kc-where{margin-top:6px;color:var(--muted);font-size:13.5px}
+.kincard .kc-go{display:inline-block;margin-top:10px;font-weight:600;font-size:14.5px;text-decoration:none}
+.kincard .kc-x{position:absolute;top:6px;right:8px;border:0;background:none;color:var(--muted);font-size:22px;line-height:1;padding:4px 6px;cursor:pointer}
+.kinline{font-family:var(--body);font-size:13px;letter-spacing:.1em;text-transform:uppercase;color:var(--maroon);font-weight:600;margin:4px 0 0}

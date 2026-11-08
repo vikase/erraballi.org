@@ -14,7 +14,7 @@ This is an example story. It shows the format. Each paragraph is separated by a 
 
 ## A heading for a new part of the story
 
-Write the story in the words of the person. Use *italics* and **bold** where needed. A link looks like [this](https://erraballi.org).
+Write the story in the words of the person. Use *italics* and **bold** where needed. A link looks like [this](https://erraballi.org). A relative on the tree looks like [Vijay](#p=199): the reader can tap the name to see who he is.
 
 > A line in their own words, set apart as a quote.
 

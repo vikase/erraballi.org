@@ -25,7 +25,8 @@ const first=p=>p.name.split(' ')[0];
 // ---------- a small Markdown reader (headings, paragraphs, quotes, lists, photos, links, bold, italics) ----------
 function inline(t){
   return esc(t)
-    .replace(/\[([^\]]+)\]\(([^)\s]+)\)/g,(m,a,u)=>`<a href="${esc(safeUrl(u))}">${a}</a>`)
+    .replace(/\[([^\]]+)\]\(([^)\s]+)\)/g,(m,a,u)=>{const k=/^#p=(\d+)$/.exec(u); // [Name](#p=ID): a name that opens the person card (kin.js)
+      return k?`<a class="kin" href="${ROOT}#p=${k[1]}" data-p="${k[1]}">${a}</a>`:`<a href="${esc(safeUrl(u))}">${a}</a>`;})
     .replace(/\*\*([^*]+)\*\*/g,'<b>$1</b>')
     .replace(/(^|[\s(])[*_]([^*_]+)[*_](?=[\s).,;:!?]|$)/g,'$1<i>$2</i>');
 }
@@ -63,6 +64,7 @@ async function storyPage(){
     const {meta,body}=frontMatter(text);
     const p=people.get(+meta.person);
     document.title=`${meta.title||'A family story'} · Erraballi`;
+    if(p)document.body.dataset.teller=p.id;
     const bits=[meta.told_by&&`Told by ${esc(meta.told_by)}`, meta.written_by&&`${meta.kind==='written'?'Written':'Recorded'} by ${esc(meta.written_by)}`,
       meta.when&&esc(when(meta.when)), meta.language&&esc(meta.language)].filter(Boolean);
     box.innerHTML=`<header class="s-opener"><p class="eyebrow">A family story</p><h1>${esc(meta.title||'A family story')}</h1>
@@ -73,6 +75,7 @@ async function storyPage(){
         ${meta.approved_by?`<p>Shared on the family site with the approval of ${esc(meta.approved_by)}${meta.approved_on?`, ${esc(when(meta.approved_on))}`:''}.</p>`:''}
         <p>${p?`<a href="${ROOT}#p=${p.id}">See ${esc(first(p))} on the family tree</a> · `:''}<a href="${ROOT}stories/">All family stories</a> ·
         <a href="${ROOT}stories/?person=${p?p.id:''}#send">Add a memory or a correction</a></p></footer>`;
+    if(window.Kin)Kin.ready.then(()=>Kin.wire(box));
   }catch(e){box.innerHTML='<p class="loading">This story did not load. Refresh the page to try again.</p>';console.error(e);}
 }
 
