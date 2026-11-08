@@ -141,6 +141,8 @@ main{flex:1;min-height:0;position:relative;display:flex}
 .panel dl{display:grid;grid-template-columns:auto 1fr;gap:6px 14px;margin:0 0 16px;font-size:14px}
 .panel dt{color:var(--muted)}
 .panel dd{margin:0;min-width:0}
+.panel .about{margin:-6px 0 14px;font-size:15px;line-height:1.45}
+.panel dd a.web{color:var(--maroon);overflow-wrap:anywhere}
 .panel .locked{color:var(--muted);font-style:italic}
 .chips{display:flex;flex-wrap:wrap;gap:6px}
 .chip{border:1px solid var(--line-strong);background:transparent;border-radius:999px;padding:3px 10px;font-size:13px}
@@ -508,6 +510,16 @@ details.cousins td:first-child{font-weight:600;white-space:nowrap}
 // saved, then data/people.psv in the repo. A slow answer is still saved for the next visit.
 const PEOPLE_LIVE='https://script.google.com/macros/s/AKfycbzSTvBgg-_i_tQIlmbpTpHJe-nyrV1y-2Nzaf2fk86ec2zNjC14eg1zAhXlEvsKPLercg/exec?people=1';
 const okPsv=t=>typeof t==='string'&&/^id\|name\|/.test(t)&&t.split('\n').length>100;
+// Website, About and Ask me about (web|about|ask) came after script version 4. If the list has no such columns,
+// take them from data/people.psv by ID. This does nothing once the script sends them.
+function addExtras(t){
+  if(/^[^\n]*\|web\|/.test(t))return t;
+  return fetch('data/people.psv',{cache:'no-cache'}).then(r=>r.ok?r.text():'').then(b=>{
+    const bl=b.trim().split('\n'),bh=bl[0].split('|'),iw=bh.indexOf('web');if(iw<0)return t;
+    const m=new Map(bl.slice(1).map(l=>{const c=l.split('|');return [c[0],[c[iw]||'',c[iw+1]||'',c[iw+2]||'']];}));
+    const tl=t.trim().split('\n');
+    return [tl[0]+'|web|about|ask',...tl.slice(1).map(l=>l+'|'+(m.get(l.split('|')[0])||['','','']).join('|'))].join('\n')+'\n';
+  }).catch(()=>t);}
 function loadPeople(){
   const live=fetch(PEOPLE_LIVE).then(r=>r.ok?r.text():Promise.reject(r.status)).then(t=>{if(!okPsv(t))throw new Error('bad list');try{localStorage.setItem('erraballi-psv',t);}catch(e){}return t;});
   const late=new Promise(res=>setTimeout(()=>res(null),2500));
@@ -516,7 +528,7 @@ function loadPeople(){
     if(okPsv(saved))return saved;
     return fetch('data/people.psv',{cache:'no-cache'}).then(r=>{if(!r.ok)throw new Error(r.status);return r.text();});});
 }
-loadPeople().then(text=>start(text)).catch(e=>{document.body.insertAdjacentHTML('beforeend','<p style="position:fixed;inset:auto 16px 16px;background:var(--panel);padding:12px;border:1px solid var(--line);border-radius:10px">The family list did not load. Refresh the page to try again.</p>');console.error(e);});
+loadPeople().then(addExtras).then(text=>start(text)).catch(e=>{document.body.insertAdjacentHTML('beforeend','<p style="position:fixed;inset:auto 16px 16px;background:var(--panel);padding:12px;border:1px solid var(--line);border-radius:10px">The family list did not load. Refresh the page to try again.</p>');console.error(e);});
 function start(PEOPLE_TEXT){
 // ---------- data ----------
 const lines = PEOPLE_TEXT.trim().split('\n');
@@ -739,11 +751,15 @@ function openPerson(p){current=p;show('tree');if(typeof tourDid==='function')set
   if(p.city)rows.push([p.living?'Now in':'Last in',canSee(p)?p.city:lockd]);
   if(p.occ)rows.push(['Work',canSee(p)?p.occ:lockd]);
   if(p.bday)rows.push(['Birthday',canSee(p)?p.bday:lockd]);
+  const webOk=/^https?:\/\/\S+\.\S+$/i.test(p.web||'');
+  if(webOk)rows.push(['Website',canSee(p)?`<a class="web" href="${escH(p.web)}" target="_blank" rel="noopener">${escH(p.web.replace(/^https?:\/\/(www\.)?/i,'').replace(/\/$/,''))}</a>`:lockd]);
+  if(p.ask)rows.push(['Ask me about',canSee(p)?escH(p.ask):lockd]);
   const chip=x=>`<button class="chip" data-id="${x.id}">${short(x)}</button>`;
   panel.innerHTML=`<button class="close" aria-label="Close">×</button>
     <div style="font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em">${p.desc?'Generation '+p.gen:'Married in'}${p.living?'':' · in memory'}</div>
     <div class="phead">${faceHTML(p,80)}<h2>${p.title?p.title+' ':''}${short(p)}</h2></div>
     <p class="rel">${chosen&&p.id===ME?'That’s you':termTo(p)}</p>${chosen&&p.id!==ME?cardNote():''}
+    ${p.about&&canSee(p)?`<p class="about">${escH(p.about)}</p>`:''}
     <div id="faceTools"></div>
     <dl>${rows.map(([k,v])=>`<dt>${k}</dt><dd>${v}</dd>`).join('')}</dl>
     ${STORIES[p.id]?`<a class="story" href="${STORIES[p.id].url}" ><small>Read the story</small><b>${STORIES[p.id].title}</b><span>${STORIES[p.id].by} →</span></a>`:''}
@@ -998,7 +1014,7 @@ document.getElementById('reviewBtn').onclick=openReview;
 let ASKED={}, REACH=new Set();
 // Answers sent through the site (from ENDPOINT, kind "details") win over data/people.psv, so they show at once.
 function applyValues(v){Object.entries(v||{}).forEach(([id,o])=>{const p=byId.get(+id);if(!p)return;
-  ['bday','city','occ'].forEach(f=>{if(o[f]!=null&&String(o[f]).trim())p[f]=String(o[f]).trim();});});}
+  ['bday','city','occ','web','about','ask'].forEach(f=>{if(o[f]!=null&&String(o[f]).trim())p[f]=String(o[f]).trim();});});}
 const ASK_FIELDS=[['bday','birthday'],['city','city'],['occ','work']];
 const lsGet=(k,d)=>{try{const v=localStorage.getItem(k);return v==null?d:JSON.parse(v);}catch(e){return d;}};
 const lsSet=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}};
@@ -1016,6 +1032,11 @@ function bdayInputs(key,val){const [m,d]=(val||'').split(' ');
     <input data-k="${key}" data-f="bd" type="number" min="1" max="31" inputmode="numeric" placeholder="Day" aria-label="Birthday day" value="${escH(d||'')}"></span>`;}
 function fieldInputs(p,fields,key){return fields.map(f=>f==='bday'?`<label>Birthday ${bdayInputs(key,'')}</label>`
   :`<label>${f==='city'?'City now':'Work'} <input data-k="${key}" data-f="${f}" placeholder="${f==='city'?'For example Hyderabad':'For example teacher, retired, student'}" autocomplete="off"></label>`).join('');}
+// Website, About and Ask me about: only the person fills these in, about themselves. They show on the card.
+function shareInputs(p,key){return `<label>Website <input data-k="${key}" data-f="web" type="url" inputmode="url" autocomplete="url" placeholder="https://..." value="${escH(p.web||'')}"></label>
+  <label>About me (one line) <input data-k="${key}" data-f="about" maxlength="200" placeholder="For example: I teach maths and coach cricket" value="${escH(p.about||'')}"></label>
+  <label>Ask me about <input data-k="${key}" data-f="ask" maxlength="150" placeholder="For example: moving to Austin, nursing, cricket" value="${escH(p.ask||'')}"></label>
+  <small class="priv">Everyone in the family sees these on your card. Do not add LinkedIn, email or phone here.</small>`;}
 function contactInputs(key){return `<label>Email <input data-k="${key}" data-f="email" type="email" autocomplete="email" placeholder="you@example.com"></label>
   <label>Phone or WhatsApp <input data-k="${key}" data-f="phone" type="tel" autocomplete="tel" placeholder="+1 555 123 4567"></label>
   <label class="tick"><input type="checkbox" data-k="${key}" data-f="canMessage" checked> Relatives can send me a message through this site. They do not see my email or phone.</label>
@@ -1033,6 +1054,7 @@ function openAsk(who,all){
     <p class="rel">${self?'Fill in what you know. Leave the rest blank.':'Fill in what you know about '+escH(short(p).split(' ')[0])+'. It shows on the tree at once.'}</p>
     <form id="askForm" class="ask">
       ${section(p,myMissing,'s',
+        (self?`<details class="askc"${p.web||p.about||p.ask?'':' open'}><summary>Share with the family (optional)</summary>${shareInputs(p,'s')}</details>`:'')+
         (self?`<details class="askc"${contactDone(p.id)?'':' open'}><summary>Stay in touch (optional)</summary>${contactInputs('s')}</details>`:'')+
         `<label>Anything to correct? <input data-k="s" data-f="note" placeholder="A name, a year, a missing child"></label>`)}
       ${fam.length?`<h3>Your close family</h3><p class="rel" style="margin-top:0">Do you know any of these?</p>${fam.map((o,i)=>section(o.x,o.m,'f'+i)).join('')}`:''}
@@ -1046,11 +1068,14 @@ function openAsk(who,all){
     const read=(x,k)=>{const o={pid:x.id,name:x.name};
       const bm=val(k,'bm'),bd=parseInt(val(k,'bd'),10); if(bm&&bd>=1&&bd<=31)o.bday=bm+' '+bd;
       ['city','occ','note'].forEach(f=>{const v=val(k,f);if(v)o[f]=v;});
+      if(k==='s'&&self){['web','about','ask'].forEach(f=>{const v=val(k,f);if(v&&v!==(x[f]||''))o[f]=v;});
+        if(o.web&&!/^https?:\/\//i.test(o.web))o.web='https://'+o.web;}
       if(k==='s'&&self){const em=val(k,'email'),ph=val(k,'phone');if(em)o.email=em;if(ph)o.phone=ph;if(em||ph)o.canMessage=val(k,'canMessage')===true;}
       return o;};
     const list=[read(p,'s'),...fam.map((o,i)=>read(o.x,'f'+i))].filter(o=>Object.keys(o).length>2);
     const ok=form.querySelector('#askOk');
     if(!list.length){ok.textContent='Nothing to send yet. Fill in at least one box.';return;}
+    if(list[0].web&&(!/^https?:\/\/[^\s\/]+\.\S+$/i.test(list[0].web)||/linkedin\.com/i.test(list[0].web))){ok.textContent=/linkedin/i.test(list[0].web)?'LinkedIn stays off the site. Use another link, or leave it blank.':'That website address does not look right.';return;}
     if(list[0].email&&!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(list[0].email)){ok.textContent='That email address does not look right.';return;}
     const btn=form.querySelector('button[type=submit]');btn.disabled=true;ok.textContent='Sending…';
     try{const r=await fetch(ENDPOINT,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},
@@ -1058,9 +1083,9 @@ function openAsk(who,all){
       const j=await r.json(); if(!j.ok)throw new Error(j.error);
       const sent=lsGet('erraballi-sent',{}); list.forEach(o=>{sent[o.pid]=[...new Set([...(sent[o.pid]||[]),...ASK_FIELDS.map(x=>x[0]).filter(f=>o[f])])];}); lsSet('erraballi-sent',sent);
       if(list[0].email||list[0].phone){lsSet('erraballi-contact-'+p.id,true);}
-      list.forEach(o=>{const x=byId.get(o.pid);if(!x)return;['bday','city','occ'].forEach(f=>{if(o[f])x[f]=o[f];});});
+      list.forEach(o=>{const x=byId.get(o.pid);if(!x)return;['bday','city','occ','web','about','ask'].forEach(f=>{if(o[f])x[f]=o[f];});});
       update(); renderMap(); renderMonth();
-      const onlyNote=list.every(o=>!o.bday&&!o.city&&!o.occ);
+      const onlyNote=list.every(o=>!o.bday&&!o.city&&!o.occ&&!o.web&&!o.about&&!o.ask);
       form.innerHTML=`<p class="thanks">Thank you. ${onlyNote?'Your note is with Vikas.':'It is on the tree now.'}${list.some(o=>o.note)&&!onlyNote?' Your note is with Vikas.':''}</p>`;
     }catch(err){btn.disabled=false;ok.textContent='That did not send. Check your connection and try again.';}
   };
