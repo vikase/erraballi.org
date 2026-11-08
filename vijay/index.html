@@ -27,14 +27,29 @@
 .s-opener h1{max-width:12em}
 .lede-p{font-family:var(--display);font-size:19px;line-height:1.55;margin:18px 0 0;max-width:36em}
 
-/* the places of his life */
-.places{margin:28px 0 8px;padding:0;list-style:none;display:flex;gap:0;overflow-x:auto;scrollbar-width:thin;-webkit-overflow-scrolling:touch;
-  border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
-.places li{flex:0 0 auto;position:relative;padding:14px 22px 14px 0;margin-right:22px;min-width:7.5em}
-.places li::after{content:"";position:absolute;right:0;top:50%;width:1px;height:28px;background:var(--line-strong);transform:translateY(-50%)}
-.places li:last-child::after{display:none}
-.places b{display:block;font-weight:600;font-size:15px}
-.places span{display:block;color:var(--muted);font-size:13px;margin-top:2px}
+/* the places of his life: a small drawn journey, across on wide screens, down on phones */
+.places{margin:30px 0 10px;padding:18px 0 4px;list-style:none;display:grid;grid-template-columns:repeat(7,1fr);gap:0;border-top:1px solid var(--line)}
+.places li{position:relative;display:flex;flex-direction:column;align-items:center;text-align:center;padding:0 3px}
+.places li::before{content:"";position:absolute;top:24px;left:50%;width:100%;border-top:2px dashed var(--line-strong);z-index:0}
+.places li:last-child::before{display:none}
+.places .ico{position:relative;z-index:1;width:48px;height:48px;border-radius:50%;display:grid;place-items:center;
+  background:var(--maroon-soft);color:var(--maroon);box-shadow:0 0 0 4px var(--bg);transition:transform .2s ease}
+.places li.home .ico{background:var(--leaf-soft);color:var(--leaf)}
+.places li:hover .ico{transform:translateY(-3px) rotate(-4deg)}
+.places svg{width:26px;height:26px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+.places b{display:block;font-family:var(--display);font-weight:500;font-size:16px;line-height:1.2;margin-top:10px}
+.places .d{display:block;color:var(--muted);font-size:12.5px;line-height:1.3;margin-top:3px}
+.places-key{display:flex;gap:16px;flex-wrap:wrap;font-size:12.5px;color:var(--muted);margin:10px 0 0}
+.places-key i{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:6px;vertical-align:-1px}
+@media (max-width:640px){
+  .places{grid-template-columns:1fr;row-gap:12px;padding-top:16px}
+  .places li{display:grid;grid-template-columns:44px 1fr;grid-template-rows:auto auto;column-gap:14px;align-items:center;text-align:left;padding:0}
+  .places li::before{top:44px;left:21px;width:0;height:calc(100% - 32px);border-top:0;border-left:2px dashed var(--line-strong)}
+  .places .ico{grid-row:1 / span 2;width:44px;height:44px}
+  .places b{align-self:end;margin:0}
+  .places .d{align-self:start;margin:1px 0 0}
+}
+@media (prefers-reduced-motion:reduce){ .places li:hover .ico{transform:none} }
 
 /* parts and stories */
 .parts{display:flex;flex-wrap:wrap;gap:6px;margin:22px 0 6px;padding:0;list-style:none}
@@ -65,7 +80,6 @@
 .questions{margin:12px 0 0;padding-left:1.2em;color:var(--muted);font-size:15px}
 .questions li{margin:3px 0}
 .s-end{margin-top:28px}
-@media (min-width:720px){ .places{flex-wrap:wrap} .places li{min-width:0} }
 @media (max-width:560px){ .tale p{font-size:17.5px} .tale h3{font-size:22px} .cta{padding:18px 16px} }
 </style>
 </head>
@@ -87,14 +101,15 @@
   <p class="lede-p">Vijay Kumar Rao, Thatayya to his grandchildren, was born in the Kalleda house in 1935, the year the house was finished. He went to school in Poona and Bangalore, came home at eighteen to farm at Redlawada, and went on to find black granite, to lead the granite industry of the state, and to bring electricity, a school and a health centre to his village. He married <a class="kin" href="../#p=200" data-p="200">Pramila</a> in 1955 and, after her death, <a class="kin" href="../#p=218" data-p="218">Swaroopa</a> in 1978. He is the father of <a class="kin" href="../#p=201" data-p="201">Uday</a>, <a class="kin" href="../#p=206" data-p="206">Sunil</a>, <a class="kin" href="../#p=213" data-p="213">Utham</a> and <a class="kin" href="../#p=219" data-p="219">Prasannita</a>. At 88 he wrote his life down. These are some of the stories.</p>
 
   <ol class="places" aria-label="The places of his life">
-    <li><b>Methrasapelly</b><span>where the family began</span></li>
-    <li><b>Kalleda</b><span>born 1935</span></li>
-    <li><b>Poona</b><span>school, 1949</span></li>
-    <li><b>Bangalore</b><span>Baldwin School, 1950–54</span></li>
-    <li><b>Redlawada</b><span>home from 1953</span></li>
-    <li><b>Warangal</b><span>the granite years</span></li>
-    <li><b>Hyderabad</b><span>today</span></li>
+    <li class="home"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 21v-8"/><path d="M12 13c0-4-3-6-7-6 0 4 3 6 7 6z"/><path d="M12 11c0-3.5 2.5-5.5 6.5-5.5 0 3.5-2.5 5.5-6.5 5.5z"/><path d="M7 21h10"/></svg></span><b>Methrasapelly</b><span class="d">where the family began</span></li>
+    <li class="home"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 11l9-6 9 6"/><path d="M5 10v10h14V10"/><path d="M10 20v-5h4v5"/><path d="M8 13h.01M16 13h.01"/></svg></span><b>Kalleda</b><span class="d">born 1935</span></li>
+    <li><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 7c-2-1.5-5-2-8-1.5v13c3-.5 6 0 8 1.5"/><path d="M12 7c2-1.5 5-2 8-1.5v13c-3-.5-6 0-8 1.5"/><path d="M12 7v13"/></svg></span><b>Poona</b><span class="d">school, 1949</span></li>
+    <li><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M2 9.5l10-4.5 10 4.5-10 4.5z"/><path d="M6 11.5V16c3 2 9 2 12 0v-4.5"/><path d="M21 10v5"/></svg></span><b>Bangalore</b><span class="d">Baldwin School, 1950–54</span></li>
+    <li class="home"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 21V8"/><path d="M12 8c-1.5-1-1.5-3 0-4.5 1.5 1.5 1.5 3.5 0 4.5z"/><path d="M12 13c-2.5 0-4-1.5-4.5-3.5 2.5 0 4 1.5 4.5 3.5z"/><path d="M12 13c2.5 0 4-1.5 4.5-3.5-2.5 0-4 1.5-4.5 3.5z"/><path d="M12 17.5c-2.5 0-4-1.5-4.5-3.5 2.5 0 4 1.5 4.5 3.5z"/><path d="M12 17.5c2.5 0 4-1.5 4.5-3.5-2.5 0-4 1.5-4.5 3.5z"/><path d="M5 21h14"/></svg></span><b>Redlawada</b><span class="d">home from 1953</span></li>
+    <li class="home"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 20l4.5-9 4 4 3-7L21 20z"/><path d="M7.5 11l1.5 4.5M15 8l-1 5.5"/><path d="M3 20h18"/></svg></span><b>Warangal</b><span class="d">the granite years</span></li>
+    <li class="home"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 21V8M19 21V8"/><path d="M4 8h2M18 8h2M5 5v3M19 5v3"/><path d="M5 12h14"/><path d="M9 21v-4a3 3 0 016 0v4"/><path d="M3 21h18"/></svg></span><b>Hyderabad</b><span class="d">today</span></li>
   </ol>
+  <p class="places-key" aria-hidden="true"><span><i style="background:var(--leaf)"></i>Home ground in Telangana</span><span><i style="background:var(--maroon)"></i>Away at school</span></p>
 
   <ol class="parts" aria-label="Parts">
     <li><a href="#roots">Where we come from</a></li>
