@@ -902,7 +902,7 @@ document.getElementById('reviewBtn').onclick=openReview;
 // ASKED: fields someone already sent for a person (so we do not ask again). REACH: people who allow messages.
 // A "Message" button on their card sends through the script (kind "message"); the sender never sees the address.
 let ASKED={}, REACH=new Set();
-// Live values from the master sheet (through ENDPOINT) win over data/people.psv, so new answers show at once.
+// Answers sent through the site (from ENDPOINT, kind "details") win over data/people.psv, so they show at once.
 function applyValues(v){Object.entries(v||{}).forEach(([id,o])=>{const p=byId.get(+id);if(!p)return;
   ['bday','city','occ'].forEach(f=>{if(o[f]!=null&&String(o[f]).trim())p[f]=String(o[f]).trim();});});}
 const ASK_FIELDS=[['bday','birthday'],['city','city'],['occ','work']];

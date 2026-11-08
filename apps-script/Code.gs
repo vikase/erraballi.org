@@ -4,7 +4,9 @@
  *
  * What it does
  *   GET  ?faces=1  -> {"faces": {"<personId>": "<image url>"},
- *                      "values": {"<personId>": {"bday":..,"city":..,"occ":..}}, from the master sheet (live)
+ *                      "values": {"<personId>": {"bday":..,"city":..,"occ":..}}, answers sent through the site
+ *                                  (latest applied row per field in "Details"). The site shows these over
+ *                                  data/people.psv. Not the whole master sheet: its raw text is not cleaned.
  *                      "asked": {"<personId>": ["bday","city","occ"]},  fields someone already sent (not the values)
  *                      "reach": [<personId>, ...]}                       people who said relatives can message them
  *   POST {kind:"face", pid, name, image:"data:image/jpeg;base64,...", by}
@@ -87,7 +89,12 @@ function doGet(e) {
     if (id === '' || !/^(bday|city|occ)$/.test(f)) return;
     (asked[id] = asked[id] || []).indexOf(f) < 0 && asked[id].push(f);
   });
-  const values = masterValues_();
+  const values = {};
+  rows_('Details').forEach(r => { // later rows win
+    const id = String(r[1]), f = String(r[3]);
+    if (id === '' || !/^(bday|city|occ)$/.test(f) || String(r[8]) !== 'yes') return;
+    (values[id] = values[id] || {})[f] = String(r[4]);
+  });
   const reach = rows_('Contacts').filter(r => r[4] === true && (r[2] || r[3])).map(r => Number(r[0]));
   return json_({ faces: faces, asked: asked, reach: reach, values: values });
 }
@@ -168,31 +175,12 @@ function writeMaster_(pid, f, v) {
       if (Number(data[i][idC]) === pid) {
         const old = String(data[i][c]);
         sh.getRange(i + 1, c + 1).setNumberFormat('@').setValue(v);
-        CacheService.getScriptCache().remove('master');
         return { ok: true, old: old };
       }
     }
     return { ok: false, error: 'person not found' };
   } catch (err) { return { ok: false, error: String(err).slice(0, 100) }; }
 }
-// Birthday, city and work for every person, from the master sheet. Cached for 5 minutes; a new answer clears the cache.
-function masterValues_() {
-  const cache = CacheService.getScriptCache(), hit = cache.get('master');
-  if (hit) return JSON.parse(hit);
-  const out = {};
-  try {
-    const data = masterSheet_().getDataRange().getDisplayValues(), head = data[0], idC = head.indexOf('ID');
-    const cols = Object.keys(MASTER_COLS).map(f => [f, head.indexOf(MASTER_COLS[f])]).filter(x => x[1] >= 0);
-    for (let i = 1; i < data.length; i++) {
-      const id = data[i][idC]; if (id === '') continue;
-      const o = {}; cols.forEach(([f, c]) => { if (data[i][c] !== '') o[f] = data[i][c]; });
-      if (Object.keys(o).length) out[id] = o;
-    }
-    cache.put('master', JSON.stringify(out), 300);
-  } catch (err) {}
-  return out;
-}
-
 function saveContact_(pid, name, email, phone, canMessage) {
   const sh = sheet_('Contacts');
   const rows = sh.getDataRange().getValues();
