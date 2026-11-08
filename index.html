@@ -455,7 +455,20 @@ details.cousins td:first-child{font-weight:600;white-space:nowrap}
 <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/topojson-client@3.1.0/dist/topojson-client.min.js"></script>
 <script>
-fetch('data/people.psv',{cache:'no-cache'}).then(r=>{if(!r.ok)throw new Error(r.status);return r.text();}).then(text=>start(text)).catch(e=>{document.body.insertAdjacentHTML('beforeend','<p style="position:fixed;inset:auto 16px 16px;background:var(--panel);padding:12px;border:1px solid var(--line);border-radius:10px">The family list did not load. Refresh the page to try again.</p>');console.error(e);});
+// The people list comes live from the master sheet through the Apps Script (?people=1), so hand edits in the sheet show
+// within about 5 minutes. If the script is slow (over 2.5 s) or fails, the page uses the last live copy this browser
+// saved, then data/people.psv in the repo. A slow answer is still saved for the next visit.
+const PEOPLE_LIVE='https://script.google.com/macros/s/AKfycbzSTvBgg-_i_tQIlmbpTpHJe-nyrV1y-2Nzaf2fk86ec2zNjC14eg1zAhXlEvsKPLercg/exec?people=1';
+const okPsv=t=>typeof t==='string'&&/^id\|name\|/.test(t)&&t.split('\n').length>100;
+function loadPeople(){
+  const live=fetch(PEOPLE_LIVE).then(r=>r.ok?r.text():Promise.reject(r.status)).then(t=>{if(!okPsv(t))throw new Error('bad list');try{localStorage.setItem('erraballi-psv',t);}catch(e){}return t;});
+  const late=new Promise(res=>setTimeout(()=>res(null),2500));
+  return Promise.race([live.catch(()=>null),late]).then(t=>{if(t)return t;
+    let saved=null;try{saved=localStorage.getItem('erraballi-psv');}catch(e){}
+    if(okPsv(saved))return saved;
+    return fetch('data/people.psv',{cache:'no-cache'}).then(r=>{if(!r.ok)throw new Error(r.status);return r.text();});});
+}
+loadPeople().then(text=>start(text)).catch(e=>{document.body.insertAdjacentHTML('beforeend','<p style="position:fixed;inset:auto 16px 16px;background:var(--panel);padding:12px;border:1px solid var(--line);border-radius:10px">The family list did not load. Refresh the page to try again.</p>');console.error(e);});
 function start(PEOPLE_TEXT){
 // ---------- data ----------
 const lines = PEOPLE_TEXT.trim().split('\n');

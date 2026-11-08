@@ -9,6 +9,10 @@
  *                                  data/people.psv. Not the whole master sheet: its raw text is not cleaned.
  *                      "asked": {"<personId>": ["bday","city","occ"]},  fields someone already sent (not the values)
  *                      "reach": [<personId>, ...]}                       people who said relatives can message them
+ *   GET  ?people=1 -> the people list as text, in the same format as data/people.psv, built from the master
+ *                     sheet "Family tree master (erraballi.org)", tab People. The site reads this first, so a hand
+ *                     edit in the sheet shows on the site within about 5 minutes. Birthdays are tidied ("Mar 24, no
+ *                     year" -> "Mar 24"); "|" and line breaks in a cell become spaces.
  *   POST {kind:"face", pid, name, image:"data:image/jpeg;base64,...", by}
  *        -> saves the photo to the Drive folder "erraballi.org faces" and records it in the "Faces" tab.
  *   POST {kind:"details", by, byName, people:[{pid, name, bday, city, occ, note, email, phone, canMessage}]}
@@ -39,6 +43,10 @@ const MAX_BYTES = 1500000;      // the site shrinks photos to about 100 KB; this
 const MAX_MESSAGES_PER_DAY = 40; // all senders together; protects the email quota from abuse
 const MASTER_ID = '1pY4EbZRVKolImll693VJv02XRCT3_c8khBLVvlOmses'; // "Family tree master (erraballi.org)"
 const MASTER_COLS = { bday: 'Birthday', city: 'Current city', occ: 'Occupation' }; // header names in tab People
+// data/people.psv column -> master sheet header. Keep this order: it is the order of the columns on the site.
+const PSV_COLS = [['id', 'ID'], ['name', 'Name'], ['rel', 'Relationship to Vikas'], ['born', 'Birth year'],
+  ['died', 'Death year'], ['places', 'Places'], ['occ', 'Occupation'], ['city', 'Current city'], ['gen', 'Gen'],
+  ['parents', 'Parent IDs'], ['spouses', 'Spouse IDs'], ['bday', 'Birthday'], ['title', 'Title']];
 const TABS = {
   Faces: ['personId', 'name', 'url', 'fileId', 'by', 'at'],
   Inbox: ['at', 'kind', 'json'],
@@ -81,6 +89,9 @@ const str_ = (v, n) => String(v == null ? '' : v).trim().slice(0, n || 200);
 const owner_ = () => Session.getEffectiveUser().getEmail();
 
 function doGet(e) {
+  if (e && e.parameter && e.parameter.people) {
+    return ContentService.createTextOutput(peoplePsv_()).setMimeType(ContentService.MimeType.TEXT);
+  }
   const faces = {};
   rows_('Faces').forEach(r => { if (r[0] !== '' && r[2]) faces[String(r[0])] = r[2]; }); // later rows win
   const asked = {};
@@ -166,6 +177,34 @@ function setBySelf_(pid, f) {
   return rows_('Details').some(r => Number(r[1]) === pid && String(r[3]) === f && Number(r[5]) === pid && String(r[8]) === 'yes');
 }
 function masterSheet_() { return SpreadsheetApp.openById(MASTER_ID).getSheetByName('People'); }
+const MONTHS_ = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+// "Mar 24, no year" / "March 24" / "24 Mar" / a date cell -> "Mar 24". Unknown text is kept as it is.
+function tidyBday_(v, shown) {
+  if (v instanceof Date) return MONTHS_[v.getMonth()] + ' ' + v.getDate();
+  let t = String(shown || v || '').replace(/,?\s*no year/i, '').trim();
+  let m = /^([A-Za-z]{3})[a-z]*\.?\s*(\d{1,2})?(?:st|nd|rd|th)?(?:,?\s*\d{4})?$/.exec(t);
+  if (!m) { const k = /^(\d{1,2})\s+([A-Za-z]{3})[a-z]*/.exec(t); if (k) m = [t, k[2], k[1]]; }
+  if (!m) return t;
+  const mon = m[1].charAt(0).toUpperCase() + m[1].slice(1, 3).toLowerCase();
+  return MONTHS_.indexOf(mon) < 0 ? t : (m[2] ? mon + ' ' + Number(m[2]) : mon);
+}
+// The whole people list, as data/people.psv text. Cached for 5 minutes; an answer from the site clears it.
+function peoplePsv_() {
+  const cache = CacheService.getScriptCache(), hit = cache.get('psv');
+  if (hit) return hit;
+  const rng = masterSheet_().getDataRange(), vals = rng.getValues(), shown = rng.getDisplayValues(), head = shown[0];
+  const cols = PSV_COLS.map(([k, h]) => [k, head.indexOf(h)]);
+  const clean = x => String(x).replace(/[|\r\n]+/g, ' ').trim();
+  const lines = [PSV_COLS.map(c => c[0]).join('|')];
+  for (let i = 1; i < shown.length; i++) {
+    const idC = cols[0][1];
+    if (idC < 0 || shown[i][idC] === '') continue;
+    lines.push(cols.map(([k, c]) => c < 0 ? '' : k === 'bday' ? clean(tidyBday_(vals[i][c], shown[i][c])) : clean(shown[i][c])).join('|'));
+  }
+  const out = lines.join('\n') + '\n';
+  if (out.length < 95000) cache.put('psv', out, 300);
+  return out;
+}
 function writeMaster_(pid, f, v) {
   try {
     const sh = masterSheet_(), data = sh.getDataRange().getValues(), head = data[0];
@@ -175,6 +214,7 @@ function writeMaster_(pid, f, v) {
       if (Number(data[i][idC]) === pid) {
         const old = String(data[i][c]);
         sh.getRange(i + 1, c + 1).setNumberFormat('@').setValue(v);
+        CacheService.getScriptCache().remove('psv');
         return { ok: true, old: old };
       }
     }
