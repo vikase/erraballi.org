@@ -1,6 +1,6 @@
 id|name|rel|born|died|places|occ|city|gen|parents|spouses|bday|title
 1|VeeraRaghava Rao Erraballi|great-great-grandfather|1878|1928||||1||2||
-2|Gopamma Erraballi|great-great-grandmother|1885|1965|||||||1||
+2|Gopamma Erraballi|great-great-grandmother|1885|1965||||||1||
 3|Puskuru|great-great-aunt|||||Vade Kothapalli, Warangal|2|1 & 2|4||
 4|Puskuru Rao|husband of great-great-aunt (Puskuru)|||||Vade Kothapalli, Warangal|||3||
 5|Seetharama akka Nemarkommula|first cousin twice removed|||||Lakshmi-akkapalli, Warangal|3|3 & 4|6||
@@ -208,7 +208,7 @@ id|name|rel|born|died|places|occ|city|gen|parents|spouses|bday|title
 215|Sunayna Erraballi|first cousin|||||Hyderabad|5|213 & 214||Dec 14|
 216|Pooja Erraballi|first cousin|||||Hyderabad|5|213 & 214||Mar 22|
 217|Nirvaan|first cousin once removed|||||Hyderabad|6|216||Jul 25|
-218|Swarupa Rao|step-grandmother|||||Hyderabad|||199||
+218|Swarupa Rao|step-grandmother (second wife of VijayKumar Rao Erraballi)|||||Hyderabad|||199||
 219|Prasannitha Erraballi|half-aunt|||||Hyderabad|4|199 & 218|220|Jan 8|
 220|Sathyanarayana H. ("Bablu")|husband of half-aunt (Prasannitha Erraballi)|||||Hyderabad|||219|May 10|
 221|Krishnav H|half first cousin|||||Hyderabad|5|219 & 220||Sep 2|
@@ -235,7 +235,7 @@ id|name|rel|born|died|places|occ|city|gen|parents|spouses|bday|title
 242|Sadhavi Reddy Erraballi|wife of second cousin once removed (Aditya Erraballi)|||||Hyderabad|||241||
 243|Jaganmohan Rao Erraballi|first cousin twice removed|1943|1995||||3|237 & 238|||
 244|Murlimohan Rao Erraballi|first cousin twice removed|||||Hyderabad|3|237 & 238|245||
-245|Malathi Rao|wife of first cousin twice removed (Murlimohan Rao Erraballi)|19??|2012|Hyderabad|||||244||
+245|Malathi Rao|wife of first cousin twice removed (Murlimohan Rao Erraballi)|19?|2012|Hyderabad|||||244||
 246|Amarnath Erraballi|second cousin once removed|1974||||Warangal|4|244 & 245|247|Jun 22|
 247|Sapna|wife of second cousin once removed (Amarnath Erraballi)|||||Warangal|||246||
 248|Neeti|third cousin|1999||||Warangal|5|246 & 247|||
@@ -281,7 +281,7 @@ id|name|rel|born|died|places|occ|city|gen|parents|spouses|bday|title
 295|Divya Priti Rao|second cousin once removed|||||Los Angeles, CA|4|293 & 294||Dec 12|
 296|Anya Reddy|third cousin|||||Los Angeles, CA|5|295||Jun 5|
 297|Arjun Reddy|third cousin|||||Los Angeles, CA|5|295|||
-298|Ashok Rao|first cousin twice removed|19??|2019||||3|275 & 276|299||
+298|Ashok Rao|first cousin twice removed|19?|2019||||3|275 & 276|299||
 299|Gayatri Reddy|wife of first cousin twice removed (Ashok Rao)|||||Bangalore|||298|Mar 28|
 300|Rahul Rao|second cousin once removed|||||London|4|298 & 299||Aug 4|
 301|Nitya Rao|second cousin once removed|||||Boston, MA|4|298 & 299||Jul 17|
