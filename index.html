@@ -327,6 +327,25 @@ details.cousins td:first-child{font-weight:600;white-space:nowrap}
 .addalb .primary{justify-self:start;background:var(--maroon);color:#fff;border:0;border-radius:10px;padding:9px 16px;font-weight:600}
 .addalb .note{font-size:13px;color:var(--muted);max-width:60ch}
 .addalb .ok{color:var(--leaf);font-size:14px}
+/* our school (IRDF) */
+.sch-top{display:grid;grid-template-columns:1.1fr .9fr;gap:28px;align-items:start}
+.sch-nums{display:flex;gap:22px;flex-wrap:wrap;margin:4px 0 20px}
+.sch-nums div b{display:block;font-family:var(--display);font-size:30px;font-weight:400;line-height:1;color:var(--maroon)}
+.sch-nums div span{font-size:13px;color:var(--muted)}
+.sch-give{display:inline-block;background:var(--maroon);color:#fff;text-decoration:none;font-weight:600;padding:11px 18px;border-radius:10px}
+.sch-fine{font-size:13px;color:var(--muted);margin:10px 0 0}
+.sch-camp{background:var(--leaf-soft);border-radius:12px;padding:14px 16px;margin:0 0 18px}
+.sch-camp b{font-family:var(--display);font-weight:500;font-size:19px;display:block;margin-bottom:2px}
+.sch-share{margin-top:34px;border-top:1px solid var(--line);padding-top:22px}
+.sch-share h2{font-family:var(--display);font-weight:400;font-size:26px;margin:0 0 4px}
+.sch-tabs{display:flex;gap:6px;margin:14px 0 8px}
+.sch-tabs button{border:1px solid var(--line-strong);background:transparent;color:var(--muted);border-radius:999px;padding:5px 12px;font-size:13px}
+.sch-tabs button[aria-pressed="true"]{background:var(--maroon-soft);color:var(--maroon);border-color:transparent}
+.sch-msg{width:100%;box-sizing:border-box;min-height:180px;border:1px solid var(--line);border-radius:12px;background:var(--panel);color:var(--fg);padding:12px 14px;font:inherit;line-height:1.5;resize:vertical}
+.sch-btns{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.sch-btns button{border:1px solid var(--line-strong);background:var(--panel);color:var(--fg);border-radius:10px;padding:8px 13px;font-weight:500}
+.sch-btns button.wa{background:#2f7a4a;border-color:#2f7a4a;color:#fff}
+@media (max-width:760px){.sch-top{grid-template-columns:1fr}}
 @media (max-width:640px){nav.views{overflow-x:auto;scrollbar-width:none;justify-content:flex-start!important}nav.views::-webkit-scrollbar{display:none}nav.views button{white-space:nowrap;padding:6px 9px!important;flex:none}.lb .stage{padding:44px 8px 4px}.lb .nav{display:none}.photos{columns:2 140px;column-gap:6px}.aph{margin-bottom:6px}}
 
 @media (max-width:640px){
@@ -358,7 +377,7 @@ details.cousins td:first-child{font-weight:600;white-space:nowrap}
       <button class="go" type="submit">Open the tree</button>
     </form>
     <button class="ghost" id="justLook" type="button">Just looking around</button>
-    <span class="cap">The house at Kalleda</span>
+    <span class="cap">The house at Kalleda · <a href="#school" id="toSchool" style="color:inherit">the school the family started there →</a></span>
   </div>
 </section>
 
@@ -374,6 +393,7 @@ details.cousins td:first-child{font-weight:600;white-space:nowrap}
     <button data-view="map">Where we are</button>
     <button data-view="month">This month</button>
     <button data-view="albums">Albums</button>
+    <button data-view="school">Our school</button>
     <a class="navlink" href="stories/">Stories</a>
   </nav>
   <button class="you" id="youBtn" title="Change who you are"><span class="dot"></span><span id="youTxt"><small>Seen from </small><b>nobody’s side</b></span></button>
@@ -441,6 +461,34 @@ details.cousins td:first-child{font-weight:600;white-space:nowrap}
 
   <section class="view page" id="albums" hidden>
     <div id="albOut"></div>
+  </section>
+
+  <section class="view page" id="school" hidden>
+    <h1>Our school in Kalleda</h1>
+    <div class="sch-top">
+      <div>
+        <p class="lede">In 1996 the family started a school in Kalleda, our own village, with 80 children and 10 teachers. It grew into the Rural Development Foundation: four schools and a junior college in Telangana villages, about half of the students girls. Family and friends in California set up the India Rural Development Fund (IRDF) the same year, so people in the US can give with a tax deduction.</p>
+        <div class="sch-nums"><div><b>2,824</b><span>students today</span></div><div><b>5</b><span>schools and college</span></div><div><b>246</b><span>teachers and staff</span></div><div><b>1996</b><span>first day, 80 children</span></div></div>
+      </div>
+      <div>
+        <div class="sch-camp" id="schCamp" hidden></div>
+        <a class="sch-give" href="https://indiarural.org" target="_blank" rel="noopener">Give at indiarural.org</a>
+        <p class="sch-fine">US 501(c)(3), EIN 94-3274500. All volunteers, no salaries. Many employers match gifts: search your company's giving portal (Benevity, YourCause) for “India Rural Development Fund”.</p>
+      </div>
+    </div>
+    <div class="sch-share">
+      <h2>Tell your friends</h2>
+      <p class="lede">The school runs on gifts from people like your friends and colleagues. Here is a message ready to send. Change it as you like; it reads best with a line of your own.</p>
+      <div class="sch-tabs" role="group" aria-label="Message length"><button type="button" data-len="short" aria-pressed="true">Short (WhatsApp, text)</button><button type="button" data-len="long" aria-pressed="false">Longer (email, LinkedIn)</button></div>
+      <textarea class="sch-msg" id="schMsg" aria-label="Message to share"></textarea>
+      <div class="sch-btns">
+        <button type="button" class="wa" id="schWa">Send on WhatsApp</button>
+        <button type="button" id="schCopy">Copy</button>
+        <button type="button" id="schMail">Email</button>
+        <button type="button" id="schLi">Post on LinkedIn</button>
+        <button type="button" id="schMore" hidden>More…</button>
+      </div>
+    </div>
   </section>
 </main>
 <div class="lb" id="lb" hidden role="dialog" aria-modal="true" aria-label="Photo">
@@ -559,11 +607,35 @@ function renderMode(){const m=document.getElementById('mode'); if(!GATED){m.inne
       else{toast('That code did not match');}};}}
 
 // ---------- views ----------
-const views=['tree','related','map','month','albums'];
+const views=['tree','related','map','month','albums','school'];
 function show(v){views.forEach(x=>document.getElementById(x).hidden=x!==v);
   document.querySelectorAll('nav.views button').forEach(b=>b.setAttribute('aria-current',b.dataset.view===v));
-  if(v==='tree')sizeTree(); if(v==='albums')renderAlbums(); }
+  if(v==='tree')sizeTree(); if(v==='albums')renderAlbums(); if(v==='school')renderSchool(); }
 document.querySelectorAll('nav.views button').forEach(b=>b.onclick=()=>{show(b.dataset.view);});
+// ---------- our school (IRDF) ----------
+// The year-end appeal shows only between these dates. Change CAMPAIGN each year (same figures as indiarural.org data/campaign.json).
+const CAMPAIGN={title:'Fund 10 teachers for 2027',line:'$3,000 pays one teacher for a school year.',starts:'2026-11-15',ends:'2026-12-31'};
+const IRDF='https://indiarural.org';
+const SCH_MSG={
+ short:c=>`In 1996 my family started a school in Kalleda, our village in Telangana, India, with 80 children. Today it is four schools and a junior college with about 2,800 students, half of them girls.${c?` This year we want to fund 10 teachers for 2027. ${CAMPAIGN.line}`:''} If you can help, or know someone who might: ${IRDF}\n(US tax-deductible, run by volunteers, no salaries.)`,
+ long:c=>`In 1996 my family opened a school in Kalleda, our village in rural Telangana, India. It started with 80 children and 10 teachers. Today the Rural Development Foundation runs four schools and a junior college there and in nearby villages: about 2,800 students, half of them girls, from kindergarten to grade 12. Its students have competed for India in archery, and many are the first in their families to finish school.\n\n${c?`This year the goal is to fund 10 teachers for 2027. ${CAMPAIGN.line}\n\n`:''}The India Rural Development Fund is the US 501(c)(3) that supports the schools (EIN 94-3274500). It is run by volunteers, with no salaries, so what you give goes to the schools. Many employers match gifts; look for "India Rural Development Fund" on your company's giving portal.\n\nIf you can give, or share this with someone who might: ${IRDF}\n\nThank you.`};
+let schLen='short';
+function campaignOn(){const t=new Date().toISOString().slice(0,10);return t>=CAMPAIGN.starts&&t<=CAMPAIGN.ends;}
+function renderSchool(){const c=campaignOn(),box=document.getElementById('schCamp');
+  box.hidden=!c; if(c)box.innerHTML=`<b>${CAMPAIGN.title}</b>${CAMPAIGN.line} Through December 31.`;
+  document.getElementById('schMsg').value=SCH_MSG[schLen](c);
+  document.querySelectorAll('.sch-tabs button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.len===schLen));}
+function schText(){return document.getElementById('schMsg').value.trim();}
+async function schCopy(){const t=schText();try{await navigator.clipboard.writeText(t);return true;}catch(e){const m=document.getElementById('schMsg');m.select();try{return document.execCommand('copy');}catch(_){return false;}}}
+document.querySelectorAll('.sch-tabs button').forEach(b=>b.onclick=()=>{schLen=b.dataset.len;renderSchool();});
+document.getElementById('schWa').onclick=()=>window.open('https://wa.me/?text='+encodeURIComponent(schText()),'_blank','noopener');
+document.getElementById('schCopy').onclick=async()=>toast(await schCopy()?'Copied. Paste it anywhere':'Select the text and copy it');
+document.getElementById('schMail').onclick=()=>{location.href='mailto:?subject='+encodeURIComponent('A school my family started in rural India')+'&body='+encodeURIComponent(schText());};
+document.getElementById('schLi').onclick=async()=>{const ok=await schCopy();toast(ok?'Message copied. Paste it into your LinkedIn post':'Copy the message, then paste it into your post');
+  setTimeout(()=>window.open('https://www.linkedin.com/sharing/share-offsite/?url='+encodeURIComponent(IRDF),'_blank','noopener'),600);};
+if(navigator.share){const mb=document.getElementById('schMore');mb.hidden=false;mb.onclick=()=>navigator.share({title:'India Rural Development Fund',text:schText()}).catch(()=>{});}
+document.getElementById('toSchool').onclick=e=>{e.preventDefault();try{localStorage.setItem('erraballi-looked','1')}catch(_){};closeWelcome();show('school');};
+
 function toast(t){const el=document.getElementById('toast');el.textContent=t;el.classList.add('show');clearTimeout(el._t);el._t=setTimeout(()=>el.classList.remove('show'),1800);}
 
 // ---------- tree (drawn as a plant: tapered bark branches, leaves for people) ----------
@@ -1151,7 +1223,7 @@ function buildTour(){const steps=[], bud=pickBud(); tCtx={bud};
   steps.push({el:()=>document.getElementById('q'),pad:6,h:'Find anyone',p:'Type a name here. The tree opens the right branches and takes you to them.'});
   steps.push({el:()=>document.getElementById(chosen?'findMe':'youBtn'),pad:6,h:chosen?'Lost? Come back to yourself':'Tell the tree who you are',
     p:chosen?'“Show me” brings you back to your own place in the tree. “Open every branch” shows all seven generations at once.':'Tap here and pick your name. The tree then shows every relationship from your side.'});
-  steps.push({el:()=>document.querySelector('nav.views'),pad:6,h:'More ways in',p:'How two people are related, where everyone lives, this month’s birthdays, the photo albums, and family stories.'});
+  steps.push({el:()=>document.querySelector('nav.views'),pad:6,h:'More ways in',p:'How two people are related, where everyone lives, this month’s birthdays, the photo albums, our school in Kalleda, and family stories.'});
   return steps;}
 function unionRect(els){els=[].concat(els); const rs=els.map(e=>e.getBoundingClientRect());
   const l=Math.min(...rs.map(r=>r.left)),t=Math.min(...rs.map(r=>r.top)),R=Math.max(...rs.map(r=>r.right)),B=Math.max(...rs.map(r=>r.bottom));
@@ -1198,12 +1270,13 @@ renderMode(); sizeTree(); update(); renderMap(); renderMonth(); renderYou();
 let looked=false; try{looked=localStorage.getItem('erraballi-looked')==='1';}catch(e){}
 welcome.hidden=chosen||looked;
 // A link like erraballi.org/#p=199 (from a story page) opens that person's card.
+if(location.hash==='#school'){welcome.hidden=true;show('school');}
 const hp=/^#p=(\d+)$/.exec(location.hash||''); if(hp&&byId.has(+hp[1])){welcome.hidden=true;const x=byId.get(+hp[1]);setTimeout(()=>{reveal(x.id);openPerson(x);},0);}
 svg.call(zoom.transform,d3.zoomIdentity.translate(180,document.querySelector('.canvas').getBoundingClientRect().height/2));
 // A returning visitor who picked a name starts at their own place, with their own branch open.
 if(!hp&&chosen)setTimeout(()=>revealMine(ME),0);
 // Someone who closed the opening screen before this guide existed still gets it once.
-if(!hp&&welcome.hidden)startTour();
+if(!hp&&welcome.hidden&&location.hash!=='#school')startTour();
 window.addEventListener('resize',sizeTree);
 setTimeout(maybeNudge,2500);
 }
