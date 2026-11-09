@@ -27,6 +27,9 @@
  *        -> emails the message to the person (if they allowed messages). The sender never sees the address.
  *           If the person gave a phone only, the message goes to Vikas to pass on. Logged in "Messages".
  *   POST anything else (album form, story form) -> one row in the "Inbox" tab.
+ *   Evening digest: dailyDigest() runs about 8 PM New York time and emails the owner one list of the day's
+ *        changes (details with old and new values, photos, contact updates, messages, forms). No email on a quiet
+ *        day. Run testDigest() to get a [TEST] copy of the last 7 days.
  *
  * Setup (one time)
  *   1. script.google.com > New project. Paste this file as Code.gs.
@@ -76,6 +79,7 @@ function setup() {
   if (!p.getProperty('FOLDER_ID')) {
     p.setProperty('FOLDER_ID', DriveApp.createFolder('erraballi.org faces').getId());
   }
+  ensureDigestTrigger_(); // evening digest email, about 8 PM New York time
   Logger.log('Emails left today: ' + MailApp.getRemainingDailyQuota()); // asks for the email permission
   Logger.log('Sheet: https://docs.google.com/spreadsheets/d/' + p.getProperty('SHEET_ID'));
 }
@@ -239,13 +243,63 @@ function saveContact_(pid, name, email, phone, canMessage) {
   const old = at > 0 ? rows[at - 1] : null;
   const row = [pid, name, email || (old ? old[2] : ''), phone || (old ? old[3] : ''), canMessage, new Date()];
   if (at > 0) sh.getRange(at, 1, 1, row.length).setValues([row]); else sh.appendRow(row);
-  try {
-    MailApp.sendEmail(owner_(), 'erraballi.org: ' + name + ' updated their contact details',
-      name + ' (person ' + pid + ') sent contact details on family.erraballi.org.\n' +
-      'Relatives can message them: ' + (canMessage ? 'yes' : 'no') + '.\n\n' +
-      'If this was not really ' + name + ', set canMessage to FALSE in the Contacts tab:\n' +
-      'https://docs.google.com/spreadsheets/d/' + PropertiesService.getScriptProperties().getProperty('SHEET_ID'));
-  } catch (err) {}
+  // No email here: the evening digest lists contact updates.
+}
+
+// ---- Evening digest: one email a day to the owner, only on days with changes. ----
+// setup() makes a trigger that runs dailyDigest() at about 8 PM New York time.
+// To test: run testDigest() in the editor. It sends the last 7 days and does not move the "last sent" time.
+function dailyDigest() { digest_(false); }
+function testDigest() { digest_(true); }
+
+function digest_(test) {
+  const p = PropertiesService.getScriptProperties();
+  const now = new Date();
+  const since = test ? new Date(now - 7 * 864e5) : new Date(Number(p.getProperty('LAST_DIGEST')) || now - 864e5);
+  const tz = 'America/New_York', fmt = d => Utilities.formatDate(d, tz, 'MMM d, h:mm a');
+  const isNew = d => d instanceof Date && d > since && d <= now;
+  const FIELD = { bday: 'birthday', city: 'city', occ: 'work', web: 'website', about: 'about', ask: 'ask me about', note: 'note' };
+  const parts = [];
+
+  const det = rows_('Details').filter(r => isNew(r[0]));
+  if (det.length) parts.push('DETAILS (' + det.length + ')\n' + det.map(r => {
+    const who = String(r[6] || 'someone'), f = FIELD[r[3]] || r[3];
+    const self = String(r[5]) !== '' && Number(r[5]) === Number(r[1]);
+    const change = r[3] === 'note' ? ': "' + r[4] + '"'
+      : ' -> "' + r[4] + '"' + (r[7] ? ' (was "' + r[7] + '")' : '') + (r[8] === 'yes' ? '' : ' [not applied: ' + r[8] + ']');
+    return '- ' + fmt(r[0]) + '  ' + r[2] + ', ' + f + change + (self ? '' : '  (by ' + who + ')');
+  }).join('\n'));
+
+  const faces = rows_('Faces').filter(r => isNew(r[5]));
+  if (faces.length) parts.push('PHOTOS (' + faces.length + ')\n' + faces.map(r =>
+    '- ' + fmt(r[5]) + '  ' + r[1] + '  ' + r[2]).join('\n'));
+
+  const con = rows_('Contacts').filter(r => isNew(r[5]));
+  if (con.length) parts.push('CONTACT DETAILS (' + con.length + ')\n' + con.map(r =>
+    '- ' + fmt(r[5]) + '  ' + r[1] + ' (relatives can message: ' + (r[4] === true ? 'yes' : 'no') + ')').join('\n') +
+    '\nIf one was not really that person, set canMessage to FALSE in the Contacts tab.');
+
+  const msg = rows_('Messages').filter(r => isNew(r[0]));
+  if (msg.length) parts.push('MESSAGES (' + msg.length + ')\n' + msg.map(r =>
+    '- ' + fmt(r[0]) + '  ' + r[4] + ' to ' + r[2] + ' (' + r[9] + ')').join('\n'));
+
+  const inbox = rows_('Inbox').filter(r => isNew(r[0]));
+  if (inbox.length) parts.push('FORMS (' + inbox.length + ')\n' + inbox.map(r =>
+    '- ' + fmt(r[0]) + '  ' + (r[1] || 'form') + ': ' + String(r[2]).slice(0, 300)).join('\n'));
+
+  if (!test) p.setProperty('LAST_DIGEST', String(now.getTime()));
+  if (!parts.length && !test) return; // quiet day: no email
+  const n = det.length + faces.length + con.length + msg.length + inbox.length;
+  MailApp.sendEmail(owner_(), (test ? '[TEST] ' : '') + 'erraballi.org: ' + n + ' change' + (n === 1 ? '' : 's') + ' today',
+    (parts.length ? parts.join('\n\n') : 'No changes in the last 7 days.') +
+    '\n\nTo undo a change, fix the cell in the master sheet:\nhttps://docs.google.com/spreadsheets/d/' + MASTER_ID +
+    '\nInbox sheet (all rows):\nhttps://docs.google.com/spreadsheets/d/' + p.getProperty('SHEET_ID'),
+    { name: 'erraballi.org' });
+}
+
+function ensureDigestTrigger_() {
+  if (ScriptApp.getProjectTriggers().some(t => t.getHandlerFunction() === 'dailyDigest')) return;
+  ScriptApp.newTrigger('dailyDigest').timeBased().everyDays(1).atHour(20).inTimezone('America/New_York').create();
 }
 
 function relay_(d) {
