@@ -190,6 +190,7 @@ main{flex:1;min-height:0;position:relative;display:flex}
 .askh{display:flex;gap:10px;align-items:center}.askh small{display:block;color:var(--muted)}
 .askf{display:grid;gap:8px}
 .askc summary{cursor:pointer;font-weight:600;font-size:14px;margin-bottom:8px}.askc{display:grid;gap:8px}.askc[open]>label{margin-top:8px}
+.ask .opt,.opt{display:inline;color:var(--muted);font-weight:400;font-size:.85em;margin-left:4px}
 .bdin{display:flex;gap:6px}.bdin select{flex:1}.bdin input{width:80px}
 .thanks{color:var(--leaf);font-weight:600}
 .nudge{position:fixed;left:50%;bottom:max(16px,env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:40;width:min(560px,calc(100% - 32px));display:flex;gap:12px;align-items:center;background:var(--panel);border:1px solid var(--line);border-left:4px solid var(--bloom);border-radius:14px;box-shadow:var(--shadow);padding:12px 14px}
@@ -1028,7 +1029,7 @@ document.getElementById('reviewBtn').onclick=openReview;
 let ASKED={}, REACH=new Set();
 // Answers sent through the site (from ENDPOINT, kind "details") win over data/people.psv, so they show at once.
 function applyValues(v){Object.entries(v||{}).forEach(([id,o])=>{const p=byId.get(+id);if(!p)return;
-  ['bday','city','occ','web','about','ask'].forEach(f=>{if(o[f]!=null&&String(o[f]).trim())p[f]=String(o[f]).trim();});});}
+  ['bday','born','city','occ','web','about','ask'].forEach(f=>{if(o[f]!=null&&String(o[f]).trim())p[f]=String(o[f]).trim();});});}
 const ASK_FIELDS=[['bday','birthday'],['city','city'],['occ','work']];
 const lsGet=(k,d)=>{try{const v=localStorage.getItem(k);return v==null?d:JSON.parse(v);}catch(e){return d;}};
 const lsSet=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}};
@@ -1044,7 +1045,10 @@ const fieldWord=f=>(ASK_FIELDS.find(x=>x[0]===f)||[,f])[1];
 function bdayInputs(key,val){const [m,d]=(val||'').split(' ');
   return `<span class="bdin"><select data-k="${key}" data-f="bm" aria-label="Birthday month"><option value="">Month</option>${MONTHS.map(x=>`<option${x===m?' selected':''}>${x}</option>`).join('')}</select>
     <input data-k="${key}" data-f="bd" type="number" min="1" max="31" inputmode="numeric" placeholder="Day" aria-label="Birthday day" value="${escH(d||'')}"></span>`;}
+// Year born is optional: it shows next to the name on the tree. It is not in ASK_FIELDS, so the site never nags for it.
+const yearOK=v=>/^\d{4}$/.test(v)&&+v>=1800&&+v<=new Date().getFullYear();
 function fieldInputs(p,fields,key){return fields.map(f=>f==='bday'?`<label>Birthday ${bdayInputs(key,'')}</label>`
+  :f==='born'?`<label>Year born <small class="opt">optional</small> <input data-k="${key}" data-f="born" type="number" min="1800" max="${new Date().getFullYear()}" inputmode="numeric" placeholder="For example 1948" value="${escH(p.born||'')}"></label>`
   :`<label>${f==='city'?'City now':'Work'} <input data-k="${key}" data-f="${f}" placeholder="${f==='city'?'For example Hyderabad':'For example teacher, retired, student'}" autocomplete="off"></label>`).join('');}
 // Website, About and Ask me about: only the person fills these in, about themselves. They show on the card.
 function shareInputs(p,key){return `<label>Website <input data-k="${key}" data-f="web" type="url" inputmode="url" autocomplete="url" placeholder="https://..." value="${escH(p.web||'')}"></label>
@@ -1060,7 +1064,8 @@ function openAsk(who,all){
   const me=chosen?byId.get(ME):null; const p=who||me; if(!p){openWelcome();return;}
   const self=me&&p.id===me.id; current=null; hideNudge();
   const fam=self?closeFamily(p).map(x=>({x,m:missingFor(x)})).filter(o=>o.m.length):[];
-  const myMissing=all?ASK_FIELDS.map(x=>x[0]):missingFor(p);
+  const withYear=(x,f)=>{if(!(all&&x===p)&&x.born)return f;const i=f.indexOf('bday');return i<0?[...f,'born']:[...f.slice(0,i+1),'born',...f.slice(i+1)];};
+  const myMissing=withYear(p,all?ASK_FIELDS.map(x=>x[0]):missingFor(p));
   const section=(x,fields,key,extra)=>`<div class="askp"><div class="askh">${faceHTML(x,36)}<div><b>${escH(short(x))}</b><small>${self&&x.id===me.id?'You':escH(termTo(x)||'')}</small></div></div>
     ${fields.length?`<div class="askf">${fieldInputs(x,fields,key)}</div>`:''}${extra||''}</div>`;
   panel.innerHTML=`<button class="close" aria-label="Close">×</button><div class="eyebrow">${self?'Help fill in the tree':'Fix or add details'}</div>
@@ -1071,7 +1076,7 @@ function openAsk(who,all){
         (self?`<details class="askc"${p.web||p.about||p.ask?'':' open'}><summary>Share with the family (optional)</summary>${shareInputs(p,'s')}</details>`:'')+
         (self?`<details class="askc"${contactDone(p.id)?'':' open'}><summary>Stay in touch (optional)</summary>${contactInputs('s')}</details>`:'')+
         `<label>Anything to correct? <input data-k="s" data-f="note" placeholder="A name, a year, a missing child"></label>`)}
-      ${fam.length?`<h3>Your close family</h3><p class="rel" style="margin-top:0">Do you know any of these?</p>${fam.map((o,i)=>section(o.x,o.m,'f'+i)).join('')}`:''}
+      ${fam.length?`<h3>Your close family</h3><p class="rel" style="margin-top:0">Do you know any of these?</p>${fam.map((o,i)=>section(o.x,withYear(o.x,o.m),'f'+i)).join('')}`:''}
       <button class="primary" type="submit">Send</button><div class="ok" id="askOk" role="status"></div>
     </form>`;
   panel.classList.add('open');
@@ -1082,6 +1087,7 @@ function openAsk(who,all){
     const read=(x,k)=>{const o={pid:x.id,name:x.name};
       const bm=val(k,'bm'),bd=parseInt(val(k,'bd'),10); if(bm&&bd>=1&&bd<=31)o.bday=bm+' '+bd;
       ['city','occ','note'].forEach(f=>{const v=val(k,f);if(v)o[f]=v;});
+      const yb=val(k,'born'); if(yb&&yb!==(x.born||''))o.born=yb;
       if(k==='s'&&self){['web','about','ask'].forEach(f=>{const v=val(k,f);if(v&&v!==(x[f]||''))o[f]=v;});
         if(o.web&&!/^https?:\/\//i.test(o.web))o.web='https://'+o.web;}
       if(k==='s'&&self){const em=val(k,'email'),ph=val(k,'phone');if(em)o.email=em;if(ph)o.phone=ph;if(em||ph)o.canMessage=val(k,'canMessage')===true;}
@@ -1089,6 +1095,7 @@ function openAsk(who,all){
     const list=[read(p,'s'),...fam.map((o,i)=>read(o.x,'f'+i))].filter(o=>Object.keys(o).length>2);
     const ok=form.querySelector('#askOk');
     if(!list.length){ok.textContent='Nothing to send yet. Fill in at least one box.';return;}
+    if(list.some(o=>o.born&&!yearOK(o.born))){ok.textContent='Year born should be four digits, for example 1948.';return;}
     if(list[0].web&&(!/^https?:\/\/[^\s\/]+\.\S+$/i.test(list[0].web)||/linkedin\.com/i.test(list[0].web))){ok.textContent=/linkedin/i.test(list[0].web)?'LinkedIn stays off the site. Use another link, or leave it blank.':'That website address does not look right.';return;}
     if(list[0].email&&!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(list[0].email)){ok.textContent='That email address does not look right.';return;}
     const btn=form.querySelector('button[type=submit]');btn.disabled=true;ok.textContent='Sending…';
@@ -1097,9 +1104,9 @@ function openAsk(who,all){
       const j=await r.json(); if(!j.ok)throw new Error(j.error);
       const sent=lsGet('erraballi-sent',{}); list.forEach(o=>{sent[o.pid]=[...new Set([...(sent[o.pid]||[]),...ASK_FIELDS.map(x=>x[0]).filter(f=>o[f])])];}); lsSet('erraballi-sent',sent);
       if(list[0].email||list[0].phone){lsSet('erraballi-contact-'+p.id,true);}
-      list.forEach(o=>{const x=byId.get(o.pid);if(!x)return;['bday','city','occ','web','about','ask'].forEach(f=>{if(o[f])x[f]=o[f];});});
+      list.forEach(o=>{const x=byId.get(o.pid);if(!x)return;['bday','born','city','occ','web','about','ask'].forEach(f=>{if(o[f])x[f]=o[f];});});
       update(); renderMap(); renderMonth();
-      const onlyNote=list.every(o=>!o.bday&&!o.city&&!o.occ&&!o.web&&!o.about&&!o.ask);
+      const onlyNote=list.every(o=>!o.bday&&!o.born&&!o.city&&!o.occ&&!o.web&&!o.about&&!o.ask);
       form.innerHTML=`<p class="thanks">Thank you. ${onlyNote?'Your note is with Vikas.':'It is on the tree now.'}${list.some(o=>o.note)&&!onlyNote?' Your note is with Vikas.':''}</p>`;
     }catch(err){btn.disabled=false;ok.textContent='That did not send. Check your connection and try again.';}
   };

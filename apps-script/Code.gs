@@ -15,10 +15,10 @@
  *                     year" -> "Mar 24"); "|" and line breaks in a cell become spaces.
  *   POST {kind:"face", pid, name, image:"data:image/jpeg;base64,...", by}
  *        -> saves the photo to the Drive folder "erraballi.org faces" and records it in the "Faces" tab.
- *   POST {kind:"details", by, byName, people:[{pid, name, bday, city, occ, web, about, ask, note, email, phone, canMessage}]}
+ *   POST {kind:"details", by, byName, people:[{pid, name, bday, born, city, occ, web, about, ask, note, email, phone, canMessage}]}
  *        web (website), about (one line) and ask ("ask me about") are kept only when the person sends them about
  *        themselves (pid == by). They go to the master sheet columns Website, About and Ask me about. No LinkedIn links.
- *        -> one row per field in the "Details" tab. Birthday, city and work also go straight into the master
+ *        -> one row per field in the "Details" tab. Birthday, year born (optional), city and work also go straight into the master
  *           sheet "Family tree master (erraballi.org)", tab People, so they show on the site at once. A relative
  *           does not overwrite a field that the person set about themselves. The old value is kept in "Details".
  *           Notes ("anything to correct") stay in "Details" for a person to read. Email, phone and canMessage are kept only when the
@@ -47,7 +47,7 @@
 const MAX_BYTES = 1500000;      // the site shrinks photos to about 100 KB; this is a safety limit
 const MAX_MESSAGES_PER_DAY = 40; // all senders together; protects the email quota from abuse
 const MASTER_ID = '1pY4EbZRVKolImll693VJv02XRCT3_c8khBLVvlOmses'; // "Family tree master (erraballi.org)"
-const MASTER_COLS = { bday: 'Birthday', city: 'Current city', occ: 'Occupation', web: 'Website', about: 'About', ask: 'Ask me about' }; // header names in tab People
+const MASTER_COLS = { bday: 'Birthday', born: 'Birth year', city: 'Current city', occ: 'Occupation', web: 'Website', about: 'About', ask: 'Ask me about' }; // header names in tab People
 const SELF_ONLY = ['web', 'about', 'ask']; // only the person can set these, about themselves
 const FIELD_MAX = { note: 1000, web: 200, about: 200, ask: 150 };
 // data/people.psv column -> master sheet header. Keep this order: it is the order of the columns on the site.
@@ -112,7 +112,7 @@ function doGet(e) {
   const values = {};
   rows_('Details').forEach(r => { // later rows win
     const id = String(r[1]), f = String(r[3]);
-    if (id === '' || !/^(bday|city|occ|web|about|ask)$/.test(f) || String(r[8]) !== 'yes') return;
+    if (id === '' || !/^(bday|born|city|occ|web|about|ask)$/.test(f) || String(r[8]) !== 'yes') return;
     (values[id] = values[id] || {})[f] = String(r[4]);
   });
   const reach = rows_('Contacts').filter(r => r[4] === true && (r[2] || r[3])).map(r => Number(r[0]));
@@ -161,7 +161,7 @@ function saveDetails_(d) {
     const pid = parseInt(x.pid, 10);
     if (!(pid >= 0)) return;
     const name = str_(x.name);
-    ['bday', 'city', 'occ', 'web', 'about', 'ask', 'note'].forEach(f => {
+    ['bday', 'born', 'city', 'occ', 'web', 'about', 'ask', 'note'].forEach(f => {
       let v = str_(x[f], FIELD_MAX[f] || 120);
       if (!v) return;
       if (SELF_ONLY.indexOf(f) >= 0 && pid !== by) return; // website, about and ask: only about yourself
@@ -169,6 +169,7 @@ function saveDetails_(d) {
         if (!/^https?:\/\//i.test(v)) v = 'https://' + v;
         if (!/^https?:\/\/[^\s\/]+\.[^\s]+$/i.test(v) || /linkedin\.com/i.test(v)) return;
       }
+      if (f === 'born' && !(/^\d{4}$/.test(v) && +v >= 1800 && +v <= now.getFullYear())) return; // year born: optional, four digits
       let old = '', applied = 'note';
       if (f !== 'note') {
         const self = pid === by, selfSet = !self && setBySelf_(pid, f);
@@ -259,7 +260,7 @@ function digest_(test) {
   const since = test ? new Date(now - 7 * 864e5) : new Date(Number(p.getProperty('LAST_DIGEST')) || now - 864e5);
   const tz = 'America/New_York', fmt = d => Utilities.formatDate(d, tz, 'MMM d, h:mm a');
   const isNew = d => d instanceof Date && d > since && d <= now;
-  const FIELD = { bday: 'birthday', city: 'city', occ: 'work', web: 'website', about: 'about', ask: 'ask me about', note: 'note' };
+  const FIELD = { bday: 'birthday', born: 'year born', city: 'city', occ: 'work', web: 'website', about: 'about', ask: 'ask me about', note: 'note' };
   const parts = [];
   // Sheets turns "Feb 18" into a date cell; show it as "Feb 18" again.
   const val = v => v instanceof Date ? Utilities.formatDate(v, tz, 'MMM d') : String(v);
