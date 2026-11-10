@@ -746,8 +746,25 @@ document.getElementById('findMe').onclick=()=>{if(!chosen){openWelcome();return;
 
 // search
 const q=document.getElementById('q'), hits=document.getElementById('hits');
+// Loose name match: Telugu names have many English spellings (Subhadra / Subadhra, Lakshmi / Laxmi, Veera / Vira).
+// sk() makes a sound key: drops h after a consonant, w->v, z->j, x->ks, ee->i, oo->u, double letters to one.
+// A query word matches a name word when the keys start the same, or (4+ letters) differ by one letter (two for 7+).
+function sk(w){return w.toLowerCase().replace(/[^a-z]/g,'').replace(/x/g,'ks').replace(/ck/g,'k').replace(/q/g,'k').replace(/w/g,'v').replace(/z/g,'j')
+  .replace(/([bcdgjkprst])h/g,'$1').replace(/ee/g,'i').replace(/oo/g,'u').replace(/(.)\1+/g,'$1');}
+function lev(a,b){const m=a.length,n=b.length;let d=Array.from({length:n+1},(_,j)=>j);
+  for(let i=1;i<=m;i++){let prev=d[0];d[0]=i;for(let j=1;j<=n;j++){const t=d[j];d[j]=Math.min(d[j]+1,d[j-1]+1,prev+(a[i-1]===b[j-1]?0:1));prev=t;}}return d[n];}
+function wordCost(qw,nw){if(nw.startsWith(qw))return 0; if(qw.length<4)return 9;
+  let best=9; for(let L=qw.length-1;L<=qw.length+1;L++)if(L>0)best=Math.min(best,lev(qw,nw.slice(0,L)));
+  return best<=(qw.length>=7?2:1)?best:9;}
+function looseCost(p,v){const qs=v.split(/\s+/).map(sk).filter(Boolean), ns=p.name.split(/\s+/).map(sk).filter(Boolean);
+  if(!qs.length)return 9; let tot=0; for(const qw of qs){const c=Math.min(9,...ns.map(nw=>wordCost(qw,nw))); if(c>=9)return 9; tot+=c;} return tot;}
+function findPeople(v,max=12,ok=named){v=v.trim().toLowerCase(); if(!v)return [];
+  const exact=people.filter(p=>ok(p)&&p.name.toLowerCase().includes(v));
+  const seen=new Set(exact.map(p=>p.id));
+  const loose=people.filter(p=>ok(p)&&!seen.has(p.id)).map(p=>[p,looseCost(p,v)]).filter(x=>x[1]<9).sort((a,b)=>a[1]-b[1]).map(x=>x[0]);
+  return exact.concat(loose).slice(0,max);}
 q.oninput=()=>{const v=q.value.trim().toLowerCase(); if(v.length<2){hits.hidden=true;return;}
-  const r=people.filter(p=>named(p)&&p.name.toLowerCase().includes(v)).slice(0,12);
+  const r=findPeople(v);
   hits.innerHTML=r.map(p=>`<button data-id="${p.id}">${p.name}<small>${termTo(p)}${canSee(p)&&p.city?' · '+p.city:''}</small></button>`).join('')||'<button disabled>No one by that name</button>';
   hits.hidden=false;};
 hits.onclick=e=>{const b=e.target.closest('button[data-id]');if(!b)return;const p=byId.get(+b.dataset.id);hits.hidden=true;q.value='';reveal(p.id);openPerson(p);};
@@ -853,7 +870,7 @@ function bloodRel(a,b){ // both descendants (or ancestors on the tree)
     .filter(c=>{if(seen.has(c.id))return false;seen.add(c.id);byId.get(c.id).spouses.forEach(s=>seen.add(s));return true;}).map(c=>({lca:byId.get(c.id),t:term(c.dA,c.dB,a.g,false)}));
   return {lca:byId.get(best.id),dA:best.dA,dB:best.dB,t,also,path:[...up,best.id,...down]};
 }
-function relate(){const nm=s=>people.find(p=>named(p)&&p.name.toLowerCase()===s.trim().toLowerCase())||people.find(p=>named(p)&&p.name.toLowerCase().startsWith(s.trim().toLowerCase()));
+function relate(){const nm=s=>people.find(p=>named(p)&&p.name.toLowerCase()===s.trim().toLowerCase())||people.find(p=>named(p)&&p.name.toLowerCase().startsWith(s.trim().toLowerCase()))||(s.trim().length>=3?findPeople(s,1)[0]:null);
   const out=document.getElementById('relOut'); const a=nm(document.getElementById('pa').value), b=nm(document.getElementById('pb').value);
   if(!a||!b){out.innerHTML='';return;}
   if(a.id===b.id){out.innerHTML=`<div class="answer"><p class="big">That is the same person.</p></div>`;return;}
@@ -883,7 +900,7 @@ document.getElementById('swap').onclick=()=>{const a=document.getElementById('pa
 document.getElementById('names').innerHTML=people.filter(named).map(p=>`<option value="${p.name}">`).join('');
 // ---------- who are you (opening screen) ----------
 const welcome=document.getElementById('welcome'), me0=document.getElementById('me0');
-function findByName(v){v=v.trim().toLowerCase(); if(!v)return null; return people.find(x=>named(x)&&x.name.toLowerCase()===v)||people.find(x=>named(x)&&x.name.toLowerCase().startsWith(v));}
+function findByName(v){v=v.trim().toLowerCase(); if(!v)return null; return people.find(x=>named(x)&&x.name.toLowerCase()===v)||people.find(x=>named(x)&&x.name.toLowerCase().startsWith(v))||findPeople(v,1)[0]||null;}
 // "I am ..." list: living people only, each with a hint so two people with the same name can be told apart
 // (RamMohan Rao Erraballi picked the late RamMohan Rao "Tommy" on Nov 9). The hint is "married to X" or "child of X & Y",
 // then the city. The option value is "Name · hint"; findMe() reads the name before " · ".
