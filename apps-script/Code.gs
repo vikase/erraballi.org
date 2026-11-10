@@ -26,10 +26,17 @@
  *   POST {kind:"message", to, from, fromName, replyEmail, replyPhone, text}
  *        -> emails the message to the person (if they allowed messages). The sender never sees the address.
  *           If the person gave a phone only, the message goes to Vikas to pass on. Logged in "Messages".
+ *   GET  ?here=1  -> the same lists, records nothing. The site asks this first and pings only if the answer has "now".
+ *   POST {kind:"here", by, hide}
+ *        -> "Here now" and "Visited this week". The site sends this about every 45 seconds while a page is open.
+ *           by = the person the visitor chose in "I am ..." (empty if they chose nobody: nothing is recorded).
+ *           hide = true removes that person from both lists. Answer: {ok, now:[personId], week:[[personId, lastSeenMs]]}.
+ *           "now" = seen in the last 2 minutes (script cache). "week" = last 7 days (script property SEEN).
+ *           The names are only who each visitor chose; there is no sign-in.
  *   POST anything else (album form, story form) -> one row in the "Inbox" tab.
  *   Evening digest: dailyDigest() runs about 8 PM New York time and emails the owner one list of the day's
- *        changes (details with old and new values, photos, contact updates, messages, forms). No email on a quiet
- *        day. Run testDigest() to get a [TEST] copy of the last 7 days.
+ *        changes (details with old and new values, photos, contact updates, messages, forms), and who visited.
+ *        No email on a quiet day (visits alone do not send an email). Run testDigest() to get a [TEST] copy of the last 7 days.
  *
  * Setup (one time)
  *   1. script.google.com > New project. Paste this file as Code.gs.
@@ -98,6 +105,7 @@ const str_ = (v, n) => String(v == null ? '' : v).trim().slice(0, n || 200);
 const owner_ = () => Session.getEffectiveUser().getEmail();
 
 function doGet(e) {
+  if (e && e.parameter && e.parameter.here) return json_(here_({ by: '' })); // read only; the site checks this first
   if (e && e.parameter && e.parameter.people) {
     return ContentService.createTextOutput(peoplePsv_()).setMimeType(ContentService.MimeType.TEXT);
   }
@@ -122,6 +130,7 @@ function doGet(e) {
 function doPost(e) {
   let d;
   try { d = JSON.parse(e.postData.contents); } catch (err) { return json_({ ok: false, error: 'bad_json' }); }
+  if (d.kind === 'here') return json_(here_(d)); // own short lock; must not wait behind photo uploads
   const lock = LockService.getScriptLock();
   lock.waitLock(20000);
   try {
@@ -133,6 +142,45 @@ function doPost(e) {
   } finally {
     lock.releaseLock();
   }
+}
+
+// ---- Here now / visited this week ----
+const NOW_MS = 120000, WEEK_MS = 7 * 864e5;
+function here_(d) {
+  const by = d.by === '' || d.by == null ? -1 : parseInt(d.by, 10), t = Date.now();
+  const cache = CacheService.getScriptCache(), props = PropertiesService.getScriptProperties();
+  const read = () => {
+    let now = {}, seen = {};
+    try { now = JSON.parse(cache.get('here-now') || '{}'); } catch (e) {}
+    try { seen = JSON.parse(props.getProperty('SEEN') || '{}'); } catch (e) {}
+    return { now: now, seen: seen };
+  };
+  let st = read();
+  if (by >= 0) {
+    const lock = LockService.getScriptLock();
+    if (lock.tryLock(5000)) {
+      try {
+        st = read();
+        if (d.hide === true) {
+          delete st.now[by]; delete st.seen[by];
+          props.setProperty('SEEN', JSON.stringify(st.seen));
+        } else {
+          st.now[by] = t;
+          if (!(st.seen[by] > t - 600000)) { // write the property at most every 10 minutes per person
+            st.seen[by] = t;
+            Object.keys(st.seen).forEach(k => { if (st.seen[k] < t - 8 * 864e5) delete st.seen[k]; });
+            props.setProperty('SEEN', JSON.stringify(st.seen));
+          }
+        }
+        Object.keys(st.now).forEach(k => { if (st.now[k] < t - NOW_MS) delete st.now[k]; });
+        cache.put('here-now', JSON.stringify(st.now), 600);
+      } finally { lock.releaseLock(); }
+    }
+  }
+  const now = Object.keys(st.now).filter(k => st.now[k] >= t - NOW_MS).map(Number);
+  const week = Object.keys(st.seen).map(k => [Number(k), Math.max(st.seen[k], st.now[k] || 0)])
+    .filter(x => x[1] >= t - WEEK_MS).sort((a, b) => b[1] - a[1]);
+  return { ok: true, now: now, week: week };
 }
 
 function saveFace_(d) {
@@ -292,7 +340,15 @@ function digest_(test) {
     '- ' + fmt(r[0]) + '  ' + (r[1] || 'form') + ': ' + String(r[2]).slice(0, 300)).join('\n'));
 
   if (!test) p.setProperty('LAST_DIGEST', String(now.getTime()));
-  if (!parts.length && !test) return; // quiet day: no email
+  if (!parts.length && !test) return; // quiet day: no email (visits alone do not send one)
+  let seen = {}; try { seen = JSON.parse(p.getProperty('SEEN') || '{}'); } catch (e) {}
+  const names = {}; rows_('Faces').forEach(r => { names[String(r[0])] = r[1]; });
+  try {
+    const m = masterSheet_().getDataRange().getValues(), iC = m[0].indexOf('ID'), nC = m[0].indexOf('Name');
+    m.slice(1).forEach(r => { if (iC >= 0 && nC >= 0 && r[iC] !== '') names[String(r[iC])] = r[nC]; });
+  } catch (e) {}
+  const vis = Object.keys(seen).filter(k => seen[k] > since.getTime());
+  if (vis.length) parts.push('VISITED (' + vis.length + ', as chosen in "I am ...")\n' + vis.map(k => names[k] || ('person ' + k)).join(', '));
   const n = det.length + faces.length + con.length + msg.length + inbox.length;
   MailApp.sendEmail(owner_(), (test ? '[TEST] ' : '') + 'erraballi.org: ' + n + ' change' + (n === 1 ? '' : 's') + ' today',
     (parts.length ? parts.join('\n\n') : 'No changes in the last 7 days.') +

@@ -85,6 +85,15 @@ nav.views a.navlink:hover{color:var(--maroon)}
 .you .dot{width:8px;height:8px;border-radius:50%;background:var(--leaf)}
 .you b{font-weight:600}
 .you small{color:var(--muted)}
+.here{display:inline-flex;align-items:center;gap:7px;border:1px solid var(--line-strong);border-radius:999px;padding:3px 12px 3px 4px;background:transparent;font-size:13px;color:inherit}
+.here .fc{display:flex}.here .fc .avatar{margin-left:-7px;box-shadow:none}.here .fc .avatar:first-child{margin-left:0}
+.here .live,.herelist .live{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--leaf);flex:none}
+@media (prefers-reduced-motion:no-preference){.here .live{animation:herePulse 2s ease-in-out infinite}@keyframes herePulse{50%{opacity:.35}}}
+.herelist{list-style:none;margin:0 0 18px;padding:0}.herelist li{margin:0}
+.herelist button{display:flex;align-items:center;gap:10px;width:100%;text-align:left;border:0;background:transparent;padding:7px 4px;border-radius:10px;color:inherit;font:inherit}
+.herelist button:hover{background:var(--leaf-soft)}.herelist small{display:block;color:var(--muted);font-size:13px}
+.herelist .when{margin-left:auto;color:var(--muted);font-size:13px;white-space:nowrap}
+.herenote{color:var(--muted);font-size:13px;line-height:1.45}.herehide{display:flex;gap:8px;align-items:center;font-size:14px;margin-top:10px}
 .mode{display:flex;align-items:center;gap:8px}
 .mode .pill{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line-strong);border-radius:999px;padding:5px 10px 5px 8px;background:transparent;font-size:13px}
 .mode .pill .dot{width:8px;height:8px;border-radius:50%;background:var(--muted)}
@@ -400,6 +409,7 @@ details.cousins td:first-child{font-weight:600;white-space:nowrap}
     <a class="navlink" href="stories/">Stories</a>
   </nav>
   <button class="you" id="youBtn" title="Change who you are"><span class="dot"></span><span id="youTxt"><small>Seen from </small><b>nobody’s side</b></span></button>
+  <button class="here" id="hereBtn" type="button" hidden title="Who else is on the family site"><span class="fc" id="hereFaces"></span><span id="hereTxt"></span></button>
   <div class="mode" id="mode"></div>
 </header>
 
@@ -891,7 +901,7 @@ function renderYou(){const t=document.getElementById('youTxt'); t.innerHTML=chos
 function openWelcome(){me0.value=chosen?meLabel(byId.get(ME)):'';welcome.hidden=false;me0.focus();}
 function closeWelcome(){welcome.hidden=true;sizeTree();update();}
 document.getElementById('meForm').onsubmit=e=>{e.preventDefault();const p=findMe(me0.value);if(!p){toast('No one by that name in the tree');return;}
-  ME=p.id;chosen=true;try{localStorage.setItem('erraballi-me',ME)}catch(e){};renderYou();closeWelcome();refreshAll();revealMine(ME);toast('Showing the family from '+p.name.split(' ')[0]+'’s side');startTour();nudged=false;setTimeout(maybeNudge,1500);};
+  ME=p.id;chosen=true;try{localStorage.setItem('erraballi-me',ME)}catch(e){};renderYou();closeWelcome();refreshAll();revealMine(ME);if(typeof herePing==='function')herePing();toast('Showing the family from '+p.name.split(' ')[0]+'’s side');startTour();nudged=false;setTimeout(maybeNudge,1500);};
 document.getElementById('justLook').onclick=()=>{try{localStorage.setItem('erraballi-looked','1')}catch(e){};closeWelcome();startTour();};
 document.getElementById('youBtn').onclick=openWelcome;
 const EX=[[208,14],[208,5],[140,208],[277,206],[199,131]];
@@ -1018,6 +1028,54 @@ function openReview(){current=null;
   if(current)openPerson(current);
 })();
 document.getElementById('reviewBtn').onclick=openReview;
+
+// ---------- here now / visited this week ----------
+// While a page is open, it tells ENDPOINT (kind "here") every 45 seconds who the visitor chose in "I am ...".
+// The answer lists who is here now (last 2 minutes) and who visited in the last 7 days. There is no sign-in, so the
+// names are only who each visitor chose; the panel says so. "Hide my visits" (kept in this browser) removes you.
+let HERE={now:[],week:[]}, hereT=null, hereStart=Date.now();
+const hereHidden=()=>lsGet('erraballi-hide-visits',false);
+const agoTxt=ms=>{const m=(Date.now()-ms)/6e4; if(m<3)return 'just now'; if(m<60)return Math.round(m)+' min ago';
+  const d=new Date(ms), t=new Date(); const days=Math.round((new Date(t.toDateString())-new Date(d.toDateString()))/864e5);
+  return days===0?'today':days===1?'yesterday':days+' days ago';};
+async function herePing(){
+  if(!ENDPOINT||document.hidden)return;
+  if(Date.now()-hereStart>3*36e5)return; // stop after 3 hours on one page
+  const by=chosen&&!hereHidden()?ME:'';
+  try{const r=await fetch(ENDPOINT,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({kind:'here',by})});
+    const j=await r.json(); if(j&&j.ok){HERE={now:j.now||[],week:j.week||[]};renderHere();}}catch(e){}
+}
+function hereOthers(){const me=chosen?ME:-1, now=new Set(HERE.now.filter(id=>id!==me&&byId.has(id)));
+  const week=HERE.week.filter(([id])=>id!==me&&byId.has(id)&&!now.has(id));
+  return {now:[...now].map(id=>byId.get(id)), week:week.map(([id,t])=>({p:byId.get(id),t}))};}
+function renderHere(){const b=document.getElementById('hereBtn'), o=hereOthers(), all=[...o.now,...o.week.map(x=>x.p)];
+  if(!all.length){b.hidden=true;return;}
+  b.hidden=false;
+  document.getElementById('hereFaces').innerHTML=all.slice(0,3).map(p=>faceHTML(p,24)).join('');
+  const first=p=>short(p).split(' ')[0];
+  document.getElementById('hereTxt').innerHTML=o.now.length
+    ?`<span class="live" aria-hidden="true"></span> ${o.now.length===1?first(o.now[0])+' is here now':o.now.length+' here now'}`
+    :`${all.length===1?first(all[0])+' visited':all.length+' visited'} this week`;
+  if(panel.classList.contains('open')&&panel.querySelector('[data-herepanel]'))openHere();}
+function openHere(){current=null; const o=hereOthers();
+  const row=(p,when)=>`<li><button data-id="${p.id}">${faceHTML(p,36)}<span><b>${short(p)}</b><small>${termTo(p)||''}</small></span><span class="when">${when}</span></button></li>`;
+  panel.innerHTML=`<button class="close" aria-label="Close">×</button><div class="eyebrow" data-herepanel>On the family site</div>
+    <h2>${o.now.length?'Here now':'Nobody else is here right now'}</h2>
+    ${o.now.length?`<ul class="herelist">${o.now.map(p=>row(p,'<span class="live"></span> now')).join('')}</ul>`:''}
+    ${o.week.length?`<h2 style="font-size:18px">Visited this week</h2><ul class="herelist">${o.week.map(x=>row(x.p,agoTxt(x.t))).join('')}</ul>`:''}
+    <p class="herenote">Each name is who that visitor chose in “I am …”. Nobody signs in, so take it as a guide. Tap a name to open their card, and send a message from there.</p>
+    ${chosen?`<label class="herehide"><input type="checkbox" id="hereHide" ${hereHidden()?'checked':''}> Hide my visits from this list</label>`:'<p class="herenote">Choose who you are on the opening screen to show up here too.</p>'}`;
+  panel.classList.add('open');
+  panel.querySelector('.close').onclick=()=>panel.classList.remove('open');
+  panel.querySelectorAll('.herelist button').forEach(btn=>btn.onclick=()=>{const p=byId.get(+btn.dataset.id);reveal(p.id);openPerson(p);});
+  const h=panel.querySelector('#hereHide'); if(h)h.onchange=async()=>{lsSet('erraballi-hide-visits',h.checked);
+    if(h.checked&&ENDPOINT){try{await fetch(ENDPOINT,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({kind:'here',by:ME,hide:true})});}catch(e){}}
+    toast(h.checked?'Your visits are hidden':'Your visits show again'); herePing();};}
+document.getElementById('hereBtn').onclick=openHere;
+// The read-only check (?here=1) comes first: an older script without "here" would put each ping in its Inbox tab.
+if(ENDPOINT)fetch(ENDPOINT+'?here=1').then(r=>r.json()).then(j=>{if(!j||!Array.isArray(j.now))return;
+  HERE={now:j.now,week:j.week||[]}; renderHere(); herePing(); hereT=setInterval(herePing,45000);
+  document.addEventListener('visibilitychange',()=>{if(!document.hidden){hereStart=Date.now();herePing();}});}).catch(()=>{});
 
 // ---------- missing details and messages ----------
 // After a visitor picks "I am ...", a small note asks for what the tree is missing: their own birthday, city and work,
