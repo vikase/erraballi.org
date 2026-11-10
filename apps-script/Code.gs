@@ -175,7 +175,8 @@ function saveDetails_(d) {
         if (selfSet) applied = 'no: the person set it';
         else { const r = writeMaster_(pid, f, v); old = r.old; applied = r.ok ? 'yes' : 'no: ' + r.error; }
       }
-      det.appendRow([now, pid, name, f, v, by >= 0 ? by : '', byName, old, applied]); n++;
+      det.appendRow([now, pid, name, f, v, by >= 0 ? by : '', byName, old, applied]);
+      det.getRange(det.getLastRow(), 5).setNumberFormat('@').setValue(v); n++; // keep "Feb 18" as text
     });
     // Contact details only from the person themselves.
     if (pid === by && (x.email || x.phone || x.canMessage !== undefined)) {
@@ -260,13 +261,15 @@ function digest_(test) {
   const isNew = d => d instanceof Date && d > since && d <= now;
   const FIELD = { bday: 'birthday', city: 'city', occ: 'work', web: 'website', about: 'about', ask: 'ask me about', note: 'note' };
   const parts = [];
+  // Sheets turns "Feb 18" into a date cell; show it as "Feb 18" again.
+  const val = v => v instanceof Date ? Utilities.formatDate(v, tz, 'MMM d') : String(v);
 
   const det = rows_('Details').filter(r => isNew(r[0]));
   if (det.length) parts.push('DETAILS (' + det.length + ')\n' + det.map(r => {
     const who = String(r[6] || 'someone'), f = FIELD[r[3]] || r[3];
     const self = String(r[5]) !== '' && Number(r[5]) === Number(r[1]);
-    const change = r[3] === 'note' ? ': "' + r[4] + '"'
-      : ' -> "' + r[4] + '"' + (r[7] ? ' (was "' + r[7] + '")' : '') + (r[8] === 'yes' ? '' : ' [not applied: ' + r[8] + ']');
+    const change = r[3] === 'note' ? ': "' + val(r[4]) + '"'
+      : ' -> "' + val(r[4]) + '"' + (r[7] ? ' (was "' + val(r[7]) + '")' : '') + (r[8] === 'yes' ? '' : ' [not applied: ' + r[8] + ']');
     return '- ' + fmt(r[0]) + '  ' + r[2] + ', ' + f + change + (self ? '' : '  (by ' + who + ')');
   }).join('\n'));
 
