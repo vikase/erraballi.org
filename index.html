@@ -375,7 +375,7 @@ details.cousins td:first-child{font-weight:600;white-space:nowrap}
     <p>Seven generations from VeeraRaghava Rao, born 1878. Tell the tree who you are and it shows every relative from your side.</p>
     <form id="meForm">
       <label for="me0">I am</label>
-      <input id="me0" list="names" placeholder="start typing your name" autocomplete="off">
+      <input id="me0" list="meNames" placeholder="start typing your name" autocomplete="off">
       <button class="go" type="submit">Open the tree</button>
     </form>
     <button class="ghost" id="justLook" type="button">Just looking around</button>
@@ -430,6 +430,7 @@ details.cousins td:first-child{font-weight:600;white-space:nowrap}
       <div class="field"><label for="pb">and this person</label><input id="pb" list="names" placeholder="Start typing a name"></div>
     </div>
     <datalist id="names"></datalist>
+    <datalist id="meNames"></datalist>
     <div id="relOut"></div>
     <p class="examples">Try: <span id="exList"></span></p>
     <details class="cousins">
@@ -872,10 +873,23 @@ document.getElementById('names').innerHTML=people.filter(named).map(p=>`<option 
 // ---------- who are you (opening screen) ----------
 const welcome=document.getElementById('welcome'), me0=document.getElementById('me0');
 function findByName(v){v=v.trim().toLowerCase(); if(!v)return null; return people.find(x=>named(x)&&x.name.toLowerCase()===v)||people.find(x=>named(x)&&x.name.toLowerCase().startsWith(v));}
+// "I am ..." list: living people only, each with a hint so two people with the same name can be told apart
+// (RamMohan Rao Erraballi picked the late RamMohan Rao "Tommy" on Nov 9). The hint is "married to X" or "child of X & Y",
+// then the city. The option value is "Name · hint"; findMe() reads the name before " · ".
+const meCan=p=>named(p)&&p.living&&!(p.born&&+p.born<1915); // no death year, and not born before 1915
+const meFirst=p=>short(p).replace(/\s*\(.*?\)/g,'').split(' ')[0];
+function meHint(p){const sp=spousesOf(p).filter(named),pa=p.parents.map(id=>byId.get(id)).filter(x=>x&&named(x));
+  const h=[sp.length?'married to '+sp.map(meFirst).join(' & '):pa.length?'child of '+pa.map(meFirst).join(' & '):'',p.city||''].filter(Boolean);
+  return h.join(', ');}
+const meLabel=p=>{const h=meHint(p);return h?p.name+' · '+h:p.name;};
+document.getElementById('meNames').innerHTML=people.filter(meCan).map(p=>`<option value="${meLabel(p).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;')}">`).join('');
+function findMe(v){v=v.trim(); if(!v)return null; const lv=v.toLowerCase();
+  return people.find(x=>meCan(x)&&meLabel(x).toLowerCase()===lv)||people.find(x=>meCan(x)&&x.name.toLowerCase()===lv.split(' · ')[0])
+    ||people.find(x=>meCan(x)&&x.name.toLowerCase().startsWith(lv))||findByName(v);}
 function renderYou(){const t=document.getElementById('youTxt'); t.innerHTML=chosen?`<small>Seen from </small><b>${byId.get(ME).name.split(' ')[0]}’s side</b>`:`<small>Seen from </small><b>nobody’s side yet</b>`;}
-function openWelcome(){me0.value=chosen?byId.get(ME).name:'';welcome.hidden=false;me0.focus();}
+function openWelcome(){me0.value=chosen?meLabel(byId.get(ME)):'';welcome.hidden=false;me0.focus();}
 function closeWelcome(){welcome.hidden=true;sizeTree();update();}
-document.getElementById('meForm').onsubmit=e=>{e.preventDefault();const p=findByName(me0.value);if(!p){toast('No one by that name in the tree');return;}
+document.getElementById('meForm').onsubmit=e=>{e.preventDefault();const p=findMe(me0.value);if(!p){toast('No one by that name in the tree');return;}
   ME=p.id;chosen=true;try{localStorage.setItem('erraballi-me',ME)}catch(e){};renderYou();closeWelcome();refreshAll();revealMine(ME);toast('Showing the family from '+p.name.split(' ')[0]+'’s side');startTour();nudged=false;setTimeout(maybeNudge,1500);};
 document.getElementById('justLook').onclick=()=>{try{localStorage.setItem('erraballi-looked','1')}catch(e){};closeWelcome();startTour();};
 document.getElementById('youBtn').onclick=openWelcome;
