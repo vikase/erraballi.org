@@ -134,6 +134,9 @@ main{flex:1;min-height:0;position:relative;display:flex}
 .node text.sp{font-size:11.5px;fill:var(--muted)}
 .node.on text{font-weight:700}
 .node text:hover{fill:var(--maroon)}
+/* The person picked from search, a chip or a list: a marker behind the name. A married-in spouse shows on the "& name" line. */
+.node.focus text.nm,.node.focusSp text.sp{font-weight:700;fill:var(--maroon);paint-order:stroke;stroke:var(--bloom-soft);stroke-width:7px;stroke-linejoin:round}
+.node.focusSp text.sp{font-size:13px}
 .node .cnt{font-size:10px;fill:var(--panel);font-weight:700;text-anchor:middle;pointer-events:none}
 .node.root text.nm{font-family:var(--display);font-size:16px}
 .hint{position:absolute;left:max(14px,env(safe-area-inset-left,0px));bottom:12px;font-size:12px;color:var(--muted);background:var(--panel);border:1px solid var(--line);padding:4px 10px;border-radius:999px;pointer-events:none}
@@ -568,7 +571,7 @@ function termTo(p){ // what p is to the viewer
 }
 function cardNote(){ // explain cousin words on the person card
   if(!LASTREL)return ''; const {r,a2,b2,p,me}=LASTREL;
-  const aN=a2===p?short(p).split(' ')[0]:short(a2).split(' ')[0]+' (the '+spW(p)+')';
+  const aN=a2===p?short(p).split(' ')[0]:short(a2).split(' ')[0]+' ('+short(p).split(' ')[0]+'’s '+spW(a2)+')'; // "Raghuveer (Subhadra’s husband)", not "Raghuveer (the wife)"
   const bN=b2===me?'you':'your '+spW(me)+' '+short(b2).split(' ')[0];
   const n=cousinNote(r.dA,r.dB,aN,bN); return n?`<p class="relnote">${n}</p>`:'';}
 function inLaw(p,a2,me,b2,t){ // plain-English in-law words where they exist
@@ -712,7 +715,9 @@ function update(){
     .classed('gone',d=>!d.data.living)
     .classed('echo',d=>!!d.data.echo)
     .classed('root',d=>d.depth===0)
-    .classed('on',d=>pathSet.has(d.data.id));
+    .classed('on',d=>pathSet.has(d.data.id))
+    .classed('focus',d=>!d.data.echo&&d.data.id===focusId)
+    .classed('focusSp',d=>!d.data.echo&&focusId!=null&&d.data.id!==focusId&&(d.data.spouses||[]).includes(focusId));
   all.select('.leaf').attr('display',d=>closed(d)?'none':null).attr('transform',d=>`rotate(-28) scale(${d.depth<=1?1.25:1})`);
   all.select('.bud').attr('display',d=>closed(d)?null:'none');
   all.select('text.cnt').text(d=>closed(d)?d._children.length:'');
@@ -735,9 +740,15 @@ function expandPathTo(id){let p=byId.get(id); if(!p)return null;
   update(); return n; }
 function centerOn(n,withPanel=true){sizeTree();const r=document.querySelector('.canvas').getBoundingClientRect();const k=1;
   // keep the person clear of the panel: it takes the right 380px on wide screens, the bottom 70% on phones
-  const mobile=r.width<=640, freeW=withPanel&&!mobile?Math.max(r.width-380,r.width*.5):r.width, ty=withPanel&&mobile?r.height*.16:r.height/2;
+  const mobile=r.width<=640, freeW=withPanel&&!mobile?Math.max(r.width-380,r.width*.5):r.width;
+  // On a phone the card covers the bottom 70% of its box. Put the person in the middle of the strip above it
+  // (Nov 9: Subhadra's row was under the card, so only her husband's relatives showed).
+  let ty=r.height/2;
+  if(withPanel&&mobile){const box=(panel.offsetParent||document.body).getBoundingClientRect(), cardTop=box.bottom-box.height*.7;
+    ty=Math.max(22,(Math.min(cardTop,r.bottom)-r.top)/2);}
   svg.transition().duration(500).call(zoom.transform,d3.zoomIdentity.translate(freeW*0.3-n.y*k,ty-n.x*k).scale(k));}
-function reveal(id){const n=expandPathTo(id); if(n)centerOn(n); }
+var focusId=null; // the person picked last; update() marks them on the tree
+function reveal(id){focusId=id; const n=expandPathTo(id); if(n)centerOn(n); }
 // Open the path to a person and also their own branch, so a parent sees their children at once.
 function revealMine(id){const n=expandPathTo(id); if(!n)return null; if(!n.children&&n._children){n.children=n._children;update();} centerOn(n,false); return n;}
 document.getElementById('expandAll').onclick=()=>{root.each(n=>n.children=n._children);update();};
