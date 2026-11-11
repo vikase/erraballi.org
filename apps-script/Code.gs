@@ -33,6 +33,11 @@
  *           hide = true removes that person from both lists. Answer: {ok, now:[personId], week:[[personId, lastSeenMs]]}.
  *           "now" = seen in the last 2 minutes (script cache). "week" = last 7 days (script property SEEN).
  *           The names are only who each visitor chose; there is no sign-in.
+ *   POST {kind:"child", parent, other, name, sex:"M"|"F"|"", born, bday:"Mar 24", city, occ, by, byName}
+ *        -> "Add a child" on a person card. A new row at the bottom of the master sheet, tab People, at once (no review).
+ *           other = one of the parent's spouses (optional). Answer: {ok, id, gen, parents}, or {ok:false, error:'exists', id}
+ *           if that parent already has a child with the same name. Also one row in "Inbox" (kind "child"), so the
+ *           evening digest lists it. To undo: delete the row in the master sheet.
  *   POST anything else (album form, story form) -> one row in the "Inbox" tab.
  *   Evening digest: dailyDigest() runs about 8 PM New York time and emails the owner one list of the day's
  *        changes (details with old and new values, photos, contact updates, messages, forms), and who visited.
@@ -61,7 +66,7 @@ const FIELD_MAX = { note: 1000, web: 200, about: 200, ask: 150 };
 const PSV_COLS = [['id', 'ID'], ['name', 'Name'], ['rel', 'Relationship to Vikas'], ['born', 'Birth year'],
   ['died', 'Death year'], ['places', 'Places'], ['occ', 'Occupation'], ['city', 'Current city'], ['gen', 'Gen'],
   ['parents', 'Parent IDs'], ['spouses', 'Spouse IDs'], ['bday', 'Birthday'], ['title', 'Title'],
-  ['web', 'Website'], ['about', 'About'], ['ask', 'Ask me about']];
+  ['web', 'Website'], ['about', 'About'], ['ask', 'Ask me about'], ['sex', 'Gender']];
 const TABS = {
   Faces: ['personId', 'name', 'url', 'fileId', 'by', 'at'],
   Inbox: ['at', 'kind', 'json'],
@@ -137,6 +142,7 @@ function doPost(e) {
     if (d.kind === 'face') return json_(saveFace_(d));
     if (d.kind === 'details') return json_(saveDetails_(d));
     if (d.kind === 'message') return json_(relay_(d));
+    if (d.kind === 'child') return json_(addChild_(d));
     sheet_('Inbox').appendRow([new Date(), d.kind || d.type || '', JSON.stringify(d).slice(0, 45000)]);
     return json_({ ok: true });
   } finally {
@@ -285,6 +291,58 @@ function writeMaster_(pid, f, v) {
     return { ok: false, error: 'person not found' };
   } catch (err) { return { ok: false, error: String(err).slice(0, 100) }; }
 }
+// ---- Add a child from a person card ----
+// A new row goes to the bottom of the master sheet, tab People, at once (no review). ID = highest ID + 1.
+// Gen = the parent's Gen + 1 (the parent on the family line). Parent IDs = the parent and, if given, one of their spouses.
+// "Review flags" says who added the row and when, so Vikas can find it. To undo: delete the row.
+// Refused: no name, a parent who is not in the sheet, a spouse who is not that parent's spouse,
+// and a child with the same name under the same parent (answer: {ok:false, error:'exists', id}).
+const MAX_CHILDREN_PER_DAY = 30; // all visitors together; protects the sheet from abuse
+function addChild_(d) {
+  const pid = parseInt(d.parent, 10), other = d.other === '' || d.other == null ? -1 : parseInt(d.other, 10);
+  const name = str_(d.name, 80).replace(/\s+/g, ' '), sex = /^[MF]$/.test(d.sex) ? d.sex : '';
+  const by = parseInt(d.by, 10), byName = str_(d.byName, 100), now = new Date();
+  if (!(pid >= 0) || name.length < 2 || /[|<>]/.test(name)) return { ok: false, error: 'bad_input' };
+  const born = str_(d.born, 4), city = str_(d.city, 120), occ = str_(d.occ, 120), bday = str_(d.bday, 6);
+  if (born && !(/^\d{4}$/.test(born) && +born >= 1800 && +born <= now.getFullYear())) return { ok: false, error: 'bad_year' };
+  if (bday && !/^[A-Z][a-z]{2} \d{1,2}$/.test(bday)) return { ok: false, error: 'bad_bday' };
+  const cache = CacheService.getScriptCache(), key = 'child-' + Utilities.formatDate(now, 'UTC', 'yyyyMMdd');
+  const count = Number(cache.get(key) || 0);
+  if (count >= MAX_CHILDREN_PER_DAY) return { ok: false, error: 'busy' };
+
+  const sh = masterSheet_(), data = sh.getDataRange().getValues(), head = data[0];
+  const C = h => head.indexOf(h), idC = C('ID');
+  if (idC < 0 || C('Parent IDs') < 0 || C('Gen') < 0) return { ok: false, error: 'column missing' };
+  const ids = x => String(x || '').split('&').map(s => parseInt(s, 10)).filter(n => n >= 0);
+  const rowOf = id => data.find((r, i) => i > 0 && r[idC] !== '' && Number(r[idC]) === id);
+  const par = rowOf(pid); if (!par) return { ok: false, error: 'person not found' };
+  let sp = null;
+  if (other >= 0) {
+    if (ids(par[C('Spouse IDs')]).indexOf(other) < 0) return { ok: false, error: 'not_spouse' };
+    sp = rowOf(other); if (!sp) return { ok: false, error: 'person not found' };
+  }
+  const genOf = r => r && String(r[C('Gen')]).trim() !== '' ? Number(r[C('Gen')]) : null;
+  const g = genOf(par) != null ? genOf(par) : genOf(sp);
+  if (g == null) return { ok: false, error: 'not_on_line' }; // neither parent is on the family line
+  const parents = [pid].concat(sp ? [other] : []);
+  const norm = s => String(s).toLowerCase().replace(/[^a-z]/g, '');
+  const sibs = data.filter((r, i) => i > 0 && r[idC] !== '' && ids(r[C('Parent IDs')]).some(x => parents.indexOf(x) >= 0));
+  const same = sibs.find(r => norm(r[C('Name')]) === norm(name));
+  if (same) return { ok: false, error: 'exists', id: Number(same[idC]) };
+
+  const id = Math.max.apply(null, data.slice(1).map(r => Number(r[idC]) || 0)) + 1;
+  const row = head.map(() => '');
+  const set = (h, v) => { if (C(h) >= 0) row[C(h)] = v; };
+  set('Name', name); set('ID', id); set('Gen', g + 1); set('Parent IDs', parents.join(' & '));
+  set('Gender', sex); set('Birth year', born); set('Birthday', bday); set('Current city', city); set('Occupation', occ);
+  set('Birth order', sibs.filter(r => ids(r[C('Parent IDs')]).indexOf(pid) >= 0).length + 1);
+  set('Review flags', 'added on the site by ' + (byName || 'someone') + ', ' + Utilities.formatDate(now, 'America/New_York', 'yyyy-MM-dd'));
+  sh.getRange(sh.getLastRow() + 1, 1, 1, row.length).setNumberFormat('@').setValues([row.map(String)]); // plain text, like column L
+  cache.remove('psv'); cache.put(key, String(count + 1), 21600);
+  sheet_('Inbox').appendRow([now, 'child', JSON.stringify({ id: id, name: name, parents: parents, by: by >= 0 ? by : '', byName: byName })]);
+  return { ok: true, id: id, gen: g + 1, parents: parents };
+}
+
 function saveContact_(pid, name, email, phone, canMessage) {
   const sh = sheet_('Contacts');
   const rows = sh.getDataRange().getValues();

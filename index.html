@@ -159,6 +159,7 @@ main{flex:1;min-height:0;position:relative;display:flex}
 .chips{display:flex;flex-wrap:wrap;gap:6px}
 .chip{border:1px solid var(--line-strong);background:transparent;border-radius:999px;padding:3px 10px;font-size:13px}
 .chip:hover{background:var(--maroon-soft);border-color:var(--maroon)}
+.chip.add{border-style:dashed;color:var(--maroon)}
 .panel h3{font-size:11.5px;text-transform:uppercase;letter-spacing:.09em;color:var(--muted);margin:16px 0 6px}
 .story{display:block;margin:4px 0 16px;padding:12px 14px;border-radius:12px;background:var(--maroon-soft);color:var(--fg);text-decoration:none;border:1px solid transparent}
 .story:hover{border-color:var(--maroon)}
@@ -601,7 +602,7 @@ function inLaw(p,a2,me,b2,t){ // plain-English in-law words where they exist
 const gender=p=>{const r=p.rel.toLowerCase();
   if(/\b(wife|mother|grandmother|aunt|sister|daughter|self)\b/.test(r)) return r.includes('self')?'M':'F';
   if(/\b(husband|father|grandfather|uncle|brother|son)\b/.test(r)) return 'M'; return '';};
-people.forEach(p=>p.g=gender(p));
+people.forEach(p=>p.g=/^[MF]$/.test(p.sex||'')?p.sex:gender(p)); // Gender column (script v6) first, then the old guess
 const primaryParent=p=>p.parents.find(id=>byId.get(id)&&byId.get(id).desc)??p.parents[0];
 const childrenOf=id=>(kids.get(id)||[]).map(c=>byId.get(c));
 // A child whose mother and father are both on the family line sits on one parent's branch (primaryParent).
@@ -816,7 +817,7 @@ function openPerson(p){current=p;show('tree');if(typeof tourDid==='function')set
     <div id="inPhotos">${inPhotosHTML(p)}</div>
     ${pa.length?`<h3>Parents</h3><div class="chips">${pa.map(chip).join('')}</div>`:''}
     ${sp.length?`<h3>${sp.length>1?'Spouses':'Spouse'}</h3><div class="chips">${sp.map(chip).join('')}</div>`:''}
-    ${ch.length?`<h3>Children</h3><div class="chips">${ch.map(chip).join('')}</div>`:''}
+    ${ch.length||canAddChild(p)?`<h3>Children</h3><div class="chips">${ch.map(chip).join('')}${canAddChild(p)?'<button class="chip add" id="addKid">+ Add a child</button>':''}</div>`:''}
     <h3>Related to…</h3><div class="chips"><button class="chip" id="relMe">…me</button><button class="chip" id="relPick">…someone else</button></div>
     ${REACH.has(p.id)&&p.id!==ME?`<div class="msg"><button class="primary" id="msgBtn">Send ${escH(short(p).split(' ')[0])} a message</button></div>`:''}
     <div class="fix"><button class="tb" id="fixBtn">${chosen&&p.id===ME?'Fix or add my details':'Fix or add details'}</button></div>`;
@@ -827,6 +828,7 @@ function openPerson(p){current=p;show('tree');if(typeof tourDid==='function')set
   panel.querySelector('#relMe').onclick=()=>{if(!chosen){openWelcome();return;}document.getElementById('pa').value=short(p);document.getElementById('pb').value=byId.get(ME).name;show('related');relate();};
   panel.querySelector('#relPick').onclick=()=>{document.getElementById('pa').value=short(p);document.getElementById('pb').value='';show('related');document.getElementById('pb').focus();};
   panel.querySelector('#fixBtn').onclick=()=>openAsk(p,true);
+  const ak=panel.querySelector('#addKid'); if(ak)ak.onclick=()=>{if(!chosen){openWelcome();return;}openAddChild(p);};
   const mb=panel.querySelector('#msgBtn'); if(mb)mb.onclick=()=>openMessage(p);
 }
 
@@ -1246,6 +1248,63 @@ function maybeNudge(){
   nudge.querySelector('#nuYes').onclick=()=>openAsk();
   nudge.querySelector('#nuNo').onclick=()=>{lsSet('erraballi-nudge-'+ME,Date.now()+30*864e5);hideNudge();};
 }
+// ---------- add a child ----------
+// "+ Add a child" on a person card (a person on the family line, or one who married in). The visitor must pick "I am ..." first.
+// It sends kind "child" to ENDPOINT. Script v6 adds a row to the master sheet at once (no review) and answers with the new ID;
+// the page then puts the child on the tree without a reload. An older script only files the form in "Inbox": the page
+// then says that Vikas will add the child. The other parent is one of the person's spouses, or nobody.
+const canAddChild=p=>!!ENDPOINT&&(p.desc||spousesOf(p).some(s=>s.desc));
+function openAddChild(p){const me=byId.get(ME); current=null; hideNudge();
+  const sps=spousesOf(p), mine=p.id===ME||p.spouses.includes(ME), first=short(p).split(' ')[0];
+  const other=sps.length?`<label>Other parent <select id="k-other">${sps.map(s=>`<option value="${s.id}">${escH(short(s))}</option>`).join('')}${p.desc?'<option value="">Not on the tree</option>':''}</select></label>`:'';
+  panel.innerHTML=`<button class="close" aria-label="Close">×</button><div class="eyebrow">Add a child</div>
+    <h2>A child of ${escH(short(p))}</h2>
+    <p class="rel">${mine?'It shows on the tree at once.':'It shows on the tree at once. If this is not your own child or grandchild, check with '+escH(first)+' first.'}</p>
+    <form id="kidForm" class="ask">
+      <label>Full name <input id="k-name" required maxlength="80" autocomplete="off" placeholder="For example Aarav Erraballi"></label>
+      <label>Son or daughter <select id="k-sex"><option value="">Choose</option><option value="M">Son</option><option value="F">Daughter</option></select></label>
+      ${other}
+      <label>Year born <small class="opt">optional</small> <input id="k-born" type="number" min="1800" max="${new Date().getFullYear()}" inputmode="numeric" placeholder="For example 2019"></label>
+      <label>Birthday <small class="opt">optional</small> ${bdayInputs('k','')}</label>
+      <label>City now <small class="opt">optional</small> <input id="k-city" autocomplete="off" placeholder="For example Hyderabad"></label>
+      <label>Work <small class="opt">optional</small> <input id="k-occ" autocomplete="off" placeholder="For example student"></label>
+      <button class="primary" type="submit">Add to the tree</button><div class="ok" id="kidOk" role="status"></div>
+    </form>`;
+  panel.classList.add('open');
+  panel.querySelector('.close').onclick=()=>openPerson(p);
+  const form=panel.querySelector('#kidForm'), v=id=>{const el=form.querySelector('#'+id);return el?el.value.trim():'';};
+  form.onsubmit=async e=>{e.preventDefault(); const ok=form.querySelector('#kidOk');
+    const name=v('k-name').replace(/\s+/g,' '), born=v('k-born'), sex=v('k-sex'), oth=v('k-other');
+    const bm=form.querySelector('[data-f="bm"]').value, bd=parseInt(form.querySelector('[data-f="bd"]').value,10);
+    if(name.length<2||/[|<>]/.test(name)){ok.textContent='Write the full name.';return;}
+    if(!sex){ok.textContent='Choose son or daughter.';return;}
+    if(born&&!yearOK(born)){ok.textContent='Year born should be four digits, for example 2019.';return;}
+    const dup=childrenOf(p.id).find(c=>c.name.toLowerCase().replace(/[^a-z]/g,'')===name.toLowerCase().replace(/[^a-z]/g,''));
+    if(dup){ok.innerHTML=`${escH(dup.name)} is already on the tree. <a href="#" id="k-see">Open the card</a>`;form.querySelector('#k-see').onclick=ev=>{ev.preventDefault();reveal(dup.id);openPerson(dup);};return;}
+    const body={kind:'child',parent:p.id,other:oth,name,sex,born,bday:bm&&bd>=1&&bd<=31?bm+' '+bd:'',city:v('k-city'),occ:v('k-occ'),by:ME,byName:me?me.name:'',at:new Date().toISOString()};
+    const btn=form.querySelector('button[type=submit]');btn.disabled=true;ok.textContent='Adding…';
+    try{const j=await (await fetch(ENDPOINT,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(body)})).json();
+      if(!j.ok&&j.error==='exists'&&byId.get(j.id)){const x=byId.get(j.id);ok.textContent=x.name+' is already on the tree.';btn.disabled=false;return;}
+      if(!j.ok)throw new Error(j.error);
+      if(!j.id){form.innerHTML=`<p class="thanks">Thank you. Vikas has it and will add ${escH(name.split(' ')[0])} to the tree.</p>`;return;}
+      const kid={id:j.id,name,rel:'',born,died:'',places:'',occ:body.occ,city:body.city,gen:j.gen,parents:j.parents,spouses:[],bday:body.bday,title:'',web:'',about:'',ask:'',sex,g:sex,living:true,desc:true};
+      graftChild(kid);
+      form.innerHTML=`<p class="thanks">${escH(name.split(' ')[0])} is on the tree now.</p><button class="primary" id="k-open">Open ${escH(name.split(' ')[0])}’s card</button> <button class="tb" id="k-more">Add another child</button>`;
+      form.querySelector('#k-open').onclick=()=>{reveal(kid.id);openPerson(kid);};
+      form.querySelector('#k-more').onclick=()=>openAddChild(p);
+    }catch(err){btn.disabled=false;ok.textContent=err.message==='busy'?'Too many new names today. Try again tomorrow.':err.message==='not_on_line'?'This person is not on the family line. Add the child from the other parent’s card.':'That did not send. Check your connection and try again.';}
+  };
+}
+// Put a new person into the lists and onto the drawn tree: under the parent on the line, and as an "also under" leaf
+// under the other parent if that parent is on the line too (the same rule as echoOf above).
+function graftChild(kid){people.push(kid); byId.set(kid.id,kid);
+  kid.parents.forEach(id=>{if(!kids.has(id))kids.set(id,[]);kids.get(id).push(kid.id);});
+  const walk=(n,f)=>{f(n);(n._children||[]).forEach(c=>walk(c,f));};
+  walk(root,n=>{if(n.data.echo||!kid.parents.includes(n.data.id))return;
+    const c=d3.hierarchy(primaryParent(kid)===n.data.id?kid:echoOf(kid,n.data.id),()=>null);
+    c.parent=n; c.depth=n.depth+1; c.height=0; c._children=undefined;
+    n._children=[...(n._children||[]),c]; n.children=n._children;});
+  update(); renderMap(); renderMonth();}
 // Message a relative through the site.
 function openMessage(p){const me=chosen?byId.get(ME):null; current=null;
   panel.innerHTML=`<button class="close" aria-label="Close">×</button><div class="eyebrow">Send a message</div><h2>To ${escH(short(p))}</h2>
