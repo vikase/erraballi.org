@@ -1,13 +1,39 @@
 /* Family password gate for every page on the site.
    Load it as the first script in <head>: <script src="/gate.js"></script>
    The page stays hidden until the visitor types the family password. The browser then remembers it.
-   Note: this keeps out casual visitors and search engines. The repo is public, so it is not real security. */
+   Note: this keeps out casual visitors and search engines. The repo is public, so it is not real security.
+   Guest passwords (GUESTS) give a view-only visit for friends: the page can read, but it cannot send anything
+   (no photos, details, children, messages, albums, stories or "Here now" pings), and the edit buttons are hidden.
+   To revoke a guest password, delete its line in GUESTS. The browser checks the saved password on each visit,
+   so the guest is locked out on the next page load (GitHub Pages can take about 10 minutes to update). */
 (function () {
-  var KEY = 'erraballi-unlocked', HASH = 'e907ff8b'; // FNV-1a hash of the password, lower case
+  var KEY = 'erraballi-unlocked', HASH = 'e907ff8b'; // FNV-1a hash of the family password, lower case
+  var GUESTS = { // FNV-1a hash of each guest password, lower case: who it is for
+    '691f3925': 'friends, Nov 2026'
+  };
   function fnv(s) { var h = 0x811c9dc5; for (var i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 0x01000193) >>> 0; } return ('0000000' + h.toString(16)).slice(-8); }
-  var ok = false; try { ok = localStorage.getItem(KEY) === HASH; } catch (e) {}
-  if (ok) return;
-  var de = document.documentElement; de.classList.add('eg-locked');
+  var de = document.documentElement;
+  function guestMode() {
+    window.EG_GUEST = true; de.classList.add('eg-guest');
+    var gs = document.createElement('style');
+    gs.textContent = 'html.eg-guest :is(#addKid,.fix,.msg,#faceTools,.askstory,#hereBtn,#nudge,#addAlb,#addForm,#send,a[href$="#send"]){display:none!important}' +
+      '#eg-guestpill{position:fixed;left:10px;bottom:calc(10px + env(safe-area-inset-bottom,0px));z-index:2147483646;font:600 12px Karla,system-ui,sans-serif;' +
+      'background:rgba(42,36,30,.78);color:#fff;padding:5px 10px;border-radius:99px;pointer-events:none}';
+    document.head.appendChild(gs);
+    var pill = function () { if (document.getElementById('eg-guestpill')) return; var b = document.createElement('div'); b.id = 'eg-guestpill'; b.textContent = 'Guest view · read only'; document.body.appendChild(b); };
+    if (document.body) pill(); else document.addEventListener('DOMContentLoaded', pill);
+    var f0 = window.fetch; // a guest page sends nothing: refuse every request that is not a plain read
+    if (f0) window.fetch = function (u, o) {
+      var m = ((o && o.method) || (u && u.method) || 'GET').toUpperCase();
+      if (m !== 'GET' && m !== 'HEAD') return Promise.reject(new Error('Guest view is read only'));
+      return f0.apply(this, arguments);
+    };
+  }
+  var saved = null; try { saved = localStorage.getItem(KEY); } catch (e) {}
+  if (saved === HASH) return;
+  if (saved && GUESTS[saved]) { guestMode(); return; }
+  if (saved) { try { localStorage.removeItem(KEY); } catch (e) {} } // an old or revoked password
+  de.classList.add('eg-locked');
   var st = document.createElement('style');
   st.textContent =
     'html.eg-locked,html.eg-locked body{overflow:hidden!important;height:100%}' +
@@ -25,15 +51,17 @@
   function mount() {
     var d = document.createElement('div'); d.id = 'eg-gate';
     d.innerHTML = '<form autocomplete="off"><div class="te">ఎర్రబల్లి</div><h1>The Erraballi family</h1>' +
-      '<p>This site is for the family. Type the family password.</p>' +
-      '<input type="password" aria-label="Family password" placeholder="Family password" autofocus>' +
+      '<p>This site is for the family. Type the family password or your guest password.</p>' +
+      '<input type="password" aria-label="Password" placeholder="Password" autofocus>' +
       '<button type="submit">Enter</button><div class="err" aria-live="polite"></div></form>';
     document.body.appendChild(d);
     var f = d.querySelector('form'), inp = d.querySelector('input'), err = d.querySelector('.err');
     f.onsubmit = function (e) {
       e.preventDefault();
-      if (fnv(inp.value.trim().toLowerCase()) === HASH) {
-        try { localStorage.setItem(KEY, HASH); } catch (x) {}
+      var h = fnv(inp.value.trim().toLowerCase());
+      if (h === HASH || GUESTS[h]) {
+        try { localStorage.setItem(KEY, h); } catch (x) {}
+        if (h !== HASH) guestMode();
         de.classList.remove('eg-locked'); d.remove(); st.remove();
         window.dispatchEvent(new Event('resize')); // the tree sizes itself to the screen
       } else { err.textContent = 'That password did not match. Ask a family member.'; inp.select(); }
