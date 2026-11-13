@@ -62,6 +62,7 @@ h1,h2,h3{text-wrap:balance}
 .wcard input{flex:1 1 200px;min-width:0;border:1px solid rgba(255,255,255,.45);border-radius:10px;padding:10px 12px;background:rgba(20,16,12,.45);color:#fff;backdrop-filter:blur(6px)}
 .wcard input::placeholder{color:rgba(255,255,255,.6)}
 .wcard .go{border:0;border-radius:10px;padding:10px 16px;background:var(--maroon);background:#a43a3a;color:#fff;font-weight:600}
+#meMany{margin-top:12px}#meMany p{margin:0 0 8px;font-size:14px}#meMany button{display:block;width:100%;text-align:left;margin:0 0 6px;padding:10px 12px;border:1px solid rgba(255,255,255,.35);border-radius:10px;background:rgba(255,255,255,.1);color:#fff;font:inherit;font-size:15px;cursor:pointer}#meMany button:hover{background:rgba(255,255,255,.2)}
 .wcard .ghost{margin-top:14px;border:0;background:transparent;color:#ece3d3;text-decoration:underline;text-underline-offset:3px;padding:0}
 .wcard .cap{display:block;margin-top:18px;font-size:12px;color:rgba(255,255,255,.65);letter-spacing:.04em}
 @media (prefers-reduced-motion:no-preference){ .wcard{animation:rise .7s ease both} @keyframes rise{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}} }
@@ -399,6 +400,7 @@ details.cousins td:first-child{font-weight:600;white-space:nowrap}
       <input id="me0" list="meNames" placeholder="start typing your name" autocomplete="off">
       <button class="go" type="submit">Open the tree</button>
     </form>
+    <div id="meMany" hidden></div>
     <button class="ghost" id="justLook" type="button">Just looking around</button>
     <span class="cap">The house at Kalleda, given by the family for the village school · <a href="#school" id="toSchool" style="color:inherit">see the school today →</a></span>
   </div>
@@ -779,8 +781,10 @@ function wordCost(qw,nw){if(nw.startsWith(qw))return 0; if(qw.length<4)return 9;
   return best<=(qw.length>=7?2:1)?best:9;}
 function looseCost(p,v){const qs=v.split(/\s+/).map(sk).filter(Boolean), ns=p.name.split(/\s+/).map(sk).filter(Boolean);
   if(!qs.length)return 9; let tot=0; for(const qw of qs){const c=Math.min(9,...ns.map(nw=>wordCost(qw,nw))); if(c>=9)return 9; tot+=c;} return tot;}
+// squash(): letters only, so "Vijay Kumar" and "VijayKumar" match (Thatayya could not find himself, Nov 13).
+const squash=w=>w.toLowerCase().replace(/[^a-z]/g,'');
 function findPeople(v,max=12,ok=named){v=v.trim().toLowerCase(); if(!v)return [];
-  const exact=people.filter(p=>ok(p)&&p.name.toLowerCase().includes(v));
+  const sv=squash(v), exact=people.filter(p=>ok(p)&&(p.name.toLowerCase().includes(v)||(sv.length>=3&&squash(p.name).includes(sv))));
   const seen=new Set(exact.map(p=>p.id));
   const loose=people.filter(p=>ok(p)&&!seen.has(p.id)).map(p=>[p,looseCost(p,v)]).filter(x=>x[1]<9).sort((a,b)=>a[1]-b[1]).map(x=>x[0]);
   return exact.concat(loose).slice(0,max);}
@@ -933,14 +937,26 @@ function meHint(p){const sp=spousesOf(p).filter(named),pa=p.parents.map(id=>byId
   return h.join(', ');}
 const meLabel=p=>{const h=meHint(p);return h?p.name+' · '+h:p.name;};
 document.getElementById('meNames').innerHTML=people.filter(meCan).map(p=>`<option value="${meLabel(p).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;')}">`).join('');
-function findMe(v){v=v.trim(); if(!v)return null; const lv=v.toLowerCase();
-  return people.find(x=>meCan(x)&&meLabel(x).toLowerCase()===lv)||people.find(x=>meCan(x)&&x.name.toLowerCase()===lv.split(' · ')[0])
-    ||people.find(x=>meCan(x)&&x.name.toLowerCase().startsWith(lv))||findByName(v);}
+// findMe() returns a list. If more than one living person matches, the visitor picks; the page does not guess.
+// (Thatayya typed "Vijay" on Nov 13 and became Vijaylaxmi, the first name that starts with "Vijay".)
+function findMe(v){v=v.trim(); if(!v)return []; const lv=v.toLowerCase(), sv=squash(lv.split(' · ')[0]);
+  const one=people.find(x=>meCan(x)&&meLabel(x).toLowerCase()===lv); if(one)return [one];
+  const same=people.filter(x=>meCan(x)&&x.name.toLowerCase()===lv.split(' · ')[0]); if(same.length)return same;
+  const start=sv.length?people.filter(x=>meCan(x)&&squash(x.name).startsWith(sv)):[]; if(start.length)return start;
+  const loose=findPeople(v,8,meCan); return loose;}
 function renderYou(){const t=document.getElementById('youTxt'); t.innerHTML=chosen?`<small>Seen from </small><b>${byId.get(ME).name.split(' ')[0]}’s side</b>`:`<small>Seen from </small><b>nobody’s side yet</b>`;}
 function openWelcome(){me0.value=chosen?meLabel(byId.get(ME)):'';welcome.hidden=false;me0.focus();}
 function closeWelcome(){welcome.hidden=true;sizeTree();update();}
-document.getElementById('meForm').onsubmit=e=>{e.preventDefault();const p=findMe(me0.value);if(!p){toast('No one by that name in the tree');return;}
-  ME=p.id;chosen=true;try{localStorage.setItem('erraballi-me',ME)}catch(e){};renderYou();closeWelcome();refreshAll();revealMine(ME);if(typeof herePing==='function')herePing();toast('Showing the family from '+p.name.split(' ')[0]+'’s side');startTour();nudged=false;setTimeout(maybeNudge,1500);};
+const meMany=document.getElementById('meMany');
+me0.addEventListener('input',()=>{meMany.hidden=true;});
+document.getElementById('meForm').onsubmit=e=>{e.preventDefault();const r=findMe(me0.value);meMany.hidden=true;
+  if(!r.length){toast('No one by that name in the tree');return;}
+  if(r.length>1){meMany.innerHTML='<p>More than one person matches. Which one are you?</p>'+r.slice(0,8).map(x=>`<button type="button" data-id="${x.id}">${escH(meLabel(x))}</button>`).join('');
+    meMany.hidden=false;return;}
+  setMe(r[0]);};
+meMany.onclick=e=>{const b=e.target.closest('button[data-id]');if(b)setMe(byId.get(+b.dataset.id));};
+function setMe(p){meMany.hidden=true;
+  ME=p.id;chosen=true;try{localStorage.setItem('erraballi-me',ME)}catch(e){};renderYou();closeWelcome();refreshAll();revealMine(ME);if(typeof herePing==='function')herePing();toast('Showing the family from '+p.name.split(' ')[0]+'’s side');startTour();nudged=false;setTimeout(maybeNudge,1500);}
 document.getElementById('justLook').onclick=()=>{try{localStorage.setItem('erraballi-looked','1')}catch(e){};closeWelcome();startTour();};
 document.getElementById('youBtn').onclick=openWelcome;
 const EX=[[208,14],[208,5],[140,208],[277,206],[199,131]];
